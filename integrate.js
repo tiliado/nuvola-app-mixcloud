@@ -107,11 +107,10 @@
     player.setCanPlay(state !== PlaybackState.PLAYING);
     player.setCanPause(state === PlaybackState.PLAYING);
 
-    if (state === PlaybackState.PLAYING)
-    {
       try
       {
-        player.setCanGoNext(document.querySelector(".cloudcast-upnext-row.now-playing").nextElementSibling);
+        Mixcloud.nextBtn = document.querySelector(".cloudcast-upnext-row.now-playing").nextElementSibling;
+        player.setCanGoNext(Mixcloud.nextBtn !== null);
       } catch (e)
       {
         player.setCanGoNext(false);
@@ -119,16 +118,12 @@
 
       try
       {
-        player.setCanGoPrev(document.querySelector(".cloudcast-upnext-row.now-playing").previousElementSibling);
+        Mixcloud.prevBtn = document.querySelector(".cloudcast-upnext-row.now-playing").previousElementSibling;
+        player.setCanGoPrev(Mixcloud.prevBtn !== null);
       } catch (e)
       {
         player.setCanGoPrev(false);
       }
-    } else
-    {
-      player.setCanGoPrev(false);
-      player.setCanGoNext(false);
-    }
 
     // Schedule the next update
     setTimeout(this.update.bind(this), 500);
@@ -151,10 +146,10 @@
         }
         break;
       case PlayerAction.NEXT_SONG:
-        Nuvola.clickOnElement(document.querySelector(".cloudcast-upnext-row.now-playing").nextElementSibling);
+        Nuvola.clickOnElement(Mixcloud.nextBtn);
         break;
       case PlayerAction.PREV_SONG:
-        Nuvola.clickOnElement(document.querySelector(".cloudcast-upnext-row.now-playing").previousElementSibling);
+        Nuvola.clickOnElement(Mixcloud.prevBtn);
         break;
     }
   };
