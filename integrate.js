@@ -151,11 +151,11 @@
         }
         break;
       case PlayerAction.NEXT_SONG:
-        Nuvola.clickOnElement(Mixcloud.nextBtn);
+        Nuvola.clickOnElement(Mixcloud.nextBtn.querySelector(".cloudcast-row-image"));
         Mixcloud.refreshUpNextBtns = true;
         break;
       case PlayerAction.PREV_SONG:
-        Nuvola.clickOnElement(Mixcloud.prevBtn);
+        Nuvola.clickOnElement(Mixcloud.prevBtn.querySelector(".cloudcast-row-image"));
         Mixcloud.refreshUpNextBtns = true;
         break;
     }
