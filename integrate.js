@@ -67,6 +67,7 @@
     Mixcloud.currentTrack = document.querySelector(".player-current-audio .current-track");
     Mixcloud.currentArtist = document.querySelector(".player-current-audio .current-artist span");
     Mixcloud.player = document.querySelector(".player-control");
+    Mixcloud.refreshUpNextBtns = true;
 
     // Start update routine
     this.update();
@@ -107,23 +108,27 @@
     player.setCanPlay(state !== PlaybackState.PLAYING);
     player.setCanPause(state === PlaybackState.PLAYING);
 
+    if (Mixcloud.refreshUpNextBtns){
       try
       {
         Mixcloud.nextBtn = document.querySelector(".cloudcast-upnext-row.now-playing").nextElementSibling;
         player.setCanGoNext(Mixcloud.nextBtn !== null);
+        Mixcloud.refreshUpNextBtns = false;
       } catch (e)
       {
         player.setCanGoNext(false);
       }
-
+      
       try
       {
         Mixcloud.prevBtn = document.querySelector(".cloudcast-upnext-row.now-playing").previousElementSibling;
         player.setCanGoPrev(Mixcloud.prevBtn !== null);
+        Mixcloud.refreshUpNextBtns = false;
       } catch (e)
       {
         player.setCanGoPrev(false);
       }
+    }
 
     // Schedule the next update
     setTimeout(this.update.bind(this), 500);
@@ -147,9 +152,11 @@
         break;
       case PlayerAction.NEXT_SONG:
         Nuvola.clickOnElement(Mixcloud.nextBtn);
+        Mixcloud.refreshUpNextBtns = true;
         break;
       case PlayerAction.PREV_SONG:
         Nuvola.clickOnElement(Mixcloud.prevBtn);
+        Mixcloud.refreshUpNextBtns = true;
         break;
     }
   };
