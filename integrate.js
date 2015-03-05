@@ -37,9 +37,9 @@
   // Create new WebApp prototype
   var WebApp = Nuvola.$WebApp();
   
-  // Mixcloud data nodes
-  var Mixcloud = {};
-
+  // Mixcloud API
+  var Mixcloud = {"config" : {"player" : "player-wrapper"}};
+  
   // Initialization routines
   WebApp._onInitWebWorker = function(emitter)
   {
@@ -61,14 +61,6 @@
     // Connect handler for signal ActionActivated
     Nuvola.actions.connect("ActionActivated", this);
     
-    Mixcloud.title = document.querySelector(".player-cloudcast-details .player-cloudcast-title");
-    Mixcloud.artist = document.querySelector(".player-cloudcast-details .player-cloudcast-author-link");
-    Mixcloud.cover = document.querySelector(".player-wrapper .player-cloudcast-image img");
-    Mixcloud.currentTrack = document.querySelector(".player-current-audio .current-track");
-    Mixcloud.currentArtist = document.querySelector(".player-current-audio .current-artist span");
-    Mixcloud.player = document.querySelector(".player-control");
-    Mixcloud.refreshUpNextBtns = true;
-
     // Start update routine
     this.update();
   };
@@ -78,58 +70,77 @@
   {
     var state, album_title, album_artist;
     var track = {}
-
-    album_title = Mixcloud.title ? Mixcloud.title.innerText || null : null;
-    album_artist = Mixcloud.artist ? Mixcloud.artist.innerText || null : null;
-    
-    track.album = album_title && album_artist ? Nuvola.format("{1} by {2}", album_title, album_artist) : null;
-    track.artLocation = Mixcloud.cover ? Mixcloud.cover.src || null : null;
-    track.title =  Mixcloud.currentTrack ?  Mixcloud.currentTrack.innerText || null : null;
-    track.artist = Mixcloud.currentArtist ? Mixcloud.currentArtist.innerText || null : null;
-
-    player.setTrack(track);
-
-    try
-    {
-      if (Mixcloud.player.className.indexOf('pause-state') > -1 || Mixcloud.player.className.indexOf('loading-state') > -1)
-      {
-        state = PlaybackState.PLAYING;
-      } else
-      {
-        state = PlaybackState.PAUSED;
-      }
-    } catch (e)
-    {
-      state = PlaybackState.UNKNOWN;
-    }
-
-    player.setPlaybackState(state);
-
-    player.setCanPlay(state !== PlaybackState.PLAYING);
-    player.setCanPause(state === PlaybackState.PLAYING);
-
-    if (Mixcloud.refreshUpNextBtns){
-      try
-      {
-        Mixcloud.nextBtn = document.querySelector(".cloudcast-upnext-row.now-playing").nextElementSibling;
-        player.setCanGoNext(Mixcloud.nextBtn !== null);
-        Mixcloud.refreshUpNextBtns = false;
-      } catch (e)
-      {
-        player.setCanGoNext(false);
+//    
+    try{
+      if(!Mixcloud.hasOwnProperty("player")){
+       var tmp =  angular.element(document.getElementsByClassName(Mixcloud.config.player)).scope();
+       
+       if(typeof tmp !== "undefined"){
+         Mixcloud.player = tmp.player;
+         console.log(tmp, tmp.player.currentCloudcast);
+         return;
+       }
+      }else{
+//        console.log(Mixcloud.player, Mixcloud.player.currentCloudcast);
+//        console.log(tmp.player.currentCloudcast.title);
+//      album_title = Mixcloud.player.currentCloudcast.title;
+//      album_artist = Mixcloud.player.currentCloudcast.owner;
+//  
+//      track.album = Nuvola.format("{1} by {2}", album_title, album_artist);
+//      track.artLocation = Mixcloud.player.currentCloudcast.wwwThumbnail;
+//      track.title =  Mixcloud.player.nowPlaying.currentDisplayTrack.title;
+//      track.artist = Mixcloud.player.nowPlaying.currentDisplayTrack.artist;
+//      
+//      player.setTrack(track);
       }
       
-      try
-      {
-        Mixcloud.prevBtn = document.querySelector(".cloudcast-upnext-row.now-playing").previousElementSibling;
-        player.setCanGoPrev(Mixcloud.prevBtn !== null);
-        Mixcloud.refreshUpNextBtns = false;
-      } catch (e)
-      {
-        player.setCanGoPrev(false);
-      }
+    }catch(e){
+      console.error(e);
     }
 
+
+//    try
+//    {
+//      if (Mixcloud.player.className.indexOf('pause-state') > -1 || Mixcloud.player.className.indexOf('loading-state') > -1)
+//      {
+//        state = PlaybackState.PLAYING;
+//      } else
+//      {
+//        state = PlaybackState.PAUSED;
+//      }
+//    } catch (e)
+//    {
+//      state = PlaybackState.UNKNOWN;
+//    }
+//
+//    player.setPlaybackState(state);
+//
+//    player.setCanPlay(state !== PlaybackState.PLAYING);
+//    player.setCanPause(state === PlaybackState.PLAYING);
+//
+//    if (Mixcloud.refreshUpNextBtns){
+//      try
+//      {
+//        Mixcloud.nextBtn = document.querySelector(".cloudcast-upnext-row.now-playing").nextElementSibling;
+//        player.setCanGoNext(Mixcloud.nextBtn !== null);
+//        Mixcloud.refreshUpNextBtns = false;
+//      } catch (e)
+//      {
+//        player.setCanGoNext(false);
+//      }
+//      
+//      try
+//      {
+//        Mixcloud.prevBtn = document.querySelector(".cloudcast-upnext-row.now-playing").previousElementSibling;
+//        player.setCanGoPrev(Mixcloud.prevBtn !== null);
+//        Mixcloud.refreshUpNextBtns = false;
+//      } catch (e)
+//      {
+//        player.setCanGoPrev(false);
+//      }
+//    }
+  
+  
     // Schedule the next update
     setTimeout(this.update.bind(this), 500);
   };
@@ -137,30 +148,30 @@
   // Handler of playback actions
   WebApp._onActionActivated = function(emitter, name, param)
   {
-    switch (name)
-    {
-      case PlayerAction.TOGGLE_PLAY:
-      case PlayerAction.PLAY:
-      case PlayerAction.PAUSE:
-        Nuvola.clickOnElement(Mixcloud.player);
-        break;
-      case PlayerAction.STOP:
-        if (Mixcloud.player.className.indexOf('pause-state') > -1)
-        {
-          Nuvola.clickOnElement(Mixcloud.player);
-        }
-        break;
-      case PlayerAction.NEXT_SONG:
-        Nuvola.clickOnElement(Mixcloud.nextBtn.querySelector(".cloudcast-row-image"));
-        Mixcloud.refreshUpNextBtns = true;
-        break;
-      case PlayerAction.PREV_SONG:
-        Nuvola.clickOnElement(Mixcloud.prevBtn.querySelector(".cloudcast-row-image"));
-        Mixcloud.refreshUpNextBtns = true;
-        break;
-    }
+//    switch (name)
+//    {
+//      case PlayerAction.TOGGLE_PLAY:
+//      case PlayerAction.PLAY:
+//      case PlayerAction.PAUSE:
+//        Nuvola.clickOnElement(Mixcloud.player);
+//        break;
+//      case PlayerAction.STOP:
+//        if (Mixcloud.player.className.indexOf('pause-state') > -1)
+//        {
+//          Nuvola.clickOnElement(Mixcloud.player);
+//        }
+//        break;
+//      case PlayerAction.NEXT_SONG:
+//        Nuvola.clickOnElement(Mixcloud.nextBtn.querySelector(".cloudcast-row-image"));
+//        Mixcloud.refreshUpNextBtns = true;
+//        break;
+//      case PlayerAction.PREV_SONG:
+//        Nuvola.clickOnElement(Mixcloud.prevBtn.querySelector(".cloudcast-row-image"));
+//        Mixcloud.refreshUpNextBtns = true;
+//        break;
+//    }
   };
-
+  
   WebApp.start();
 
 })(this); // function(Nuvola)
