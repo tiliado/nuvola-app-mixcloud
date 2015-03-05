@@ -27,20 +27,25 @@
 (function(Nuvola)
 {
 
-  // Create media player component
+  // media player component
   var player = Nuvola.$object(Nuvola.MediaPlayer);
 
-  // Handy aliases
+  // aliases
   var PlaybackState = Nuvola.PlaybackState;
   var PlayerAction = Nuvola.PlayerAction;
 
   // Create new WebApp prototype
   var WebApp = Nuvola.$WebApp();
-  
+
   // Mixcloud API
-  var Mixcloud = {"config" : {"globalScope" : "html.ng-scope", "player" : "player-wrapper"}};
-  
-  // Initialization routines
+  var Mixcloud = {
+    "config": {
+      "global": "html.ng-scope",
+      "player": "div.player-wrapper"
+    }
+  };
+
+  // initialization
   WebApp._onInitWebWorker = function(emitter)
   {
     Nuvola.WebApp._onInitWebWorker.call(this, emitter);
@@ -55,110 +60,111 @@
     }
   };
 
-  // Page is ready for magic
+  // page is ready for magic
   WebApp._onPageReady = function()
   {
-    // Connect handler for signal ActionActivated
+    // connect handler for signal ActionActivated
     Nuvola.actions.connect("ActionActivated", this);
-    
-    // Start update routine
+
+    // start update routine
     this.timeout = setInterval(this._setCallback.bind(this), 100);
   };
-  
-  /* Set callback function for GrooveShark JS API */
+
+  // callback function for Mixcloud JS API
   WebApp._setCallback = function()
   {
-      try
-      {
-        // Angular scope is ready
-        Mixcloud.globalScope = angular.element(document.querySelector(Mixcloud.config.globalScope)).scope();
-        
-        // API loaded
-        clearInterval(this.timeout);
-        
-     // Start update routine
-        this.update();
-      }    catch (e)
+    try
     {
-        // Mixcloud API is probably not finished yet
+      // Angular scope is ready
+      Mixcloud.globalScope = $(document.querySelector(Mixcloud.config.global)).scope();
+
+      // API loaded
+      clearInterval(this.timeout);
+      
+      // Start update routine
+      this.update();
+    } catch (e)
+    {
+      // JS API probably not ready yet
     }
   };
+
   // Extract data from the web page
   WebApp.update = function()
   {
-    var state, album_title, album_artist;
-    var track = {}
-    
-    try{
-      if(true === Mixcloud.globalScope.webPlayer.playerOpen){
-        var playerScope = angular.element(document.getElementsByClassName('player-wrapper')).scope().player;
+    var track = {
+      title: null,
+      artist: null,
+      album: null,
+      artLocation: null
+    };
+
+    try
+    {
+      if (Mixcloud.globalScope.webPlayer.playerOpen === true)
+      {
+        var playerScope = $(document.querySelector(Mixcloud.config.player)).scope().player;
         
-        album_title = playerScope.currentCloudcast.title;
-        album_artist = playerScope.currentCloudcast.owner;
-        track.album = Nuvola.format("{1} by {2}", album_title, album_artist);
-        console.log(track);
-      }else{
-        player.setTrack(track);
+        track.album = {};
+        track.album.title = playerScope.currentCloudcast.title;
+        track.album.artist = playerScope.currentCloudcast.owner;
+        track.artLocation = Nuvola.format("https:{1}", playerScope.currentCloudcast.widgetImage);
+        track.album = Nuvola.format("{1} by {2}", track.album.title, track.album.artist);
+
+        if (playerScope.nowPlaying.currentDisplayTrack == null)
+        {
+          track.title = track.artist = null;
+        } else
+        {
+          track.title = playerScope.nowPlaying.currentDisplayTrack.title;
+          track.artist = playerScope.nowPlaying.currentDisplayTrack.artist;
+        }
       }
-//       var player =  angular.element(Mixcloud.player).scope().player;
-//       
-//         album_title = player.currentCloudcast.title;
-//      album_artist = player.currentCloudcast.owner;
-//      
-//      track.album = Nuvola.format("{1} by {2}", album_title, album_artist);
-////      track.artLocation = player.currentCloudcast.wwwThumbnail;
-////      track.title =  player.nowPlaying.currentDisplayTrack.title;
-////      track.artist = player.nowPlaying.currentDisplayTrack.artist;
-//      console.log(track);
-//      player.setTrack(track);
-//      
-    }catch(e){
-      console.log(e);
+
+      if (Mixcloud.globalScope.webPlayer.paused === true || playerScope.playing === false)
+      {
+        this.state = PlaybackState.PAUSED;
+      } else if (playerScope.playing === true)
+      {
+        this.state = PlaybackState.PLAYING;
+      } else
+      {
+        this.state = PlaybackState.UNKNOWN;
+      }
+    } catch (e)
+    {
+      this.state = PlaybackState.UNKNOWN;
     }
 
+    player.setTrack(track);
+    player.setPlaybackState(this.state);
+    player.setCanPlay(this.state === PlaybackState.PAUSED);
+    player.setCanPause(this.state === PlaybackState.PLAYING);
 
-//    try
-//    {
-//      if (Mixcloud.player.className.indexOf('pause-state') > -1 || Mixcloud.player.className.indexOf('loading-state') > -1)
-//      {
-//        state = PlaybackState.PLAYING;
-//      } else
-//      {
-//        state = PlaybackState.PAUSED;
-//      }
-//    } catch (e)
-//    {
-//      state = PlaybackState.UNKNOWN;
-//    }
-//
-//    player.setPlaybackState(state);
-//
-//    player.setCanPlay(state !== PlaybackState.PLAYING);
-//    player.setCanPause(state === PlaybackState.PLAYING);
-//
-//    if (Mixcloud.refreshUpNextBtns){
-//      try
-//      {
-//        Mixcloud.nextBtn = document.querySelector(".cloudcast-upnext-row.now-playing").nextElementSibling;
-//        player.setCanGoNext(Mixcloud.nextBtn !== null);
-//        Mixcloud.refreshUpNextBtns = false;
-//      } catch (e)
-//      {
-//        player.setCanGoNext(false);
-//      }
-//      
-//      try
-//      {
-//        Mixcloud.prevBtn = document.querySelector(".cloudcast-upnext-row.now-playing").previousElementSibling;
-//        player.setCanGoPrev(Mixcloud.prevBtn !== null);
-//        Mixcloud.refreshUpNextBtns = false;
-//      } catch (e)
-//      {
-//        player.setCanGoPrev(false);
-//      }
-//    }
-  
-  
+    // if (Mixcloud.refreshUpNextBtns){
+    // try
+    // {
+    // Mixcloud.nextBtn =
+    // document.querySelector(".cloudcast-upnext-row.now-playing").nextElementSibling;
+    // player.setCanGoNext(Mixcloud.nextBtn !== null);
+    // Mixcloud.refreshUpNextBtns = false;
+    // } catch (e)
+    // {
+    // player.setCanGoNext(false);
+    // }
+    //      
+    // try
+    // {
+    // Mixcloud.prevBtn =
+    // document.querySelector(".cloudcast-upnext-row.now-playing").previousElementSibling;
+    // player.setCanGoPrev(Mixcloud.prevBtn !== null);
+    // Mixcloud.refreshUpNextBtns = false;
+    // } catch (e)
+    // {
+    // player.setCanGoPrev(false);
+    // }
+    // }
+
     // Schedule the next update
     setTimeout(this.update.bind(this), 5000);
   };
@@ -166,30 +172,30 @@
   // Handler of playback actions
   WebApp._onActionActivated = function(emitter, name, param)
   {
-//    switch (name)
-//    {
-//      case PlayerAction.TOGGLE_PLAY:
-//      case PlayerAction.PLAY:
-//      case PlayerAction.PAUSE:
-//        Nuvola.clickOnElement(Mixcloud.player);
-//        break;
-//      case PlayerAction.STOP:
-//        if (Mixcloud.player.className.indexOf('pause-state') > -1)
-//        {
-//          Nuvola.clickOnElement(Mixcloud.player);
-//        }
-//        break;
-//      case PlayerAction.NEXT_SONG:
-//        Nuvola.clickOnElement(Mixcloud.nextBtn.querySelector(".cloudcast-row-image"));
-//        Mixcloud.refreshUpNextBtns = true;
-//        break;
-//      case PlayerAction.PREV_SONG:
-//        Nuvola.clickOnElement(Mixcloud.prevBtn.querySelector(".cloudcast-row-image"));
-//        Mixcloud.refreshUpNextBtns = true;
-//        break;
-//    }
+    // switch (name)
+    // {
+    // case PlayerAction.TOGGLE_PLAY:
+    // case PlayerAction.PLAY:
+    // case PlayerAction.PAUSE:
+    // Nuvola.clickOnElement(Mixcloud.player);
+    // break;
+    // case PlayerAction.STOP:
+    // if (Mixcloud.player.className.indexOf('pause-state') > -1)
+    // {
+    // Nuvola.clickOnElement(Mixcloud.player);
+    // }
+    // break;
+    // case PlayerAction.NEXT_SONG:
+    // Nuvola.clickOnElement(Mixcloud.nextBtn.querySelector(".cloudcast-row-image"));
+    // Mixcloud.refreshUpNextBtns = true;
+    // break;
+    // case PlayerAction.PREV_SONG:
+    // Nuvola.clickOnElement(Mixcloud.prevBtn.querySelector(".cloudcast-row-image"));
+    // Mixcloud.refreshUpNextBtns = true;
+    // break;
+    // }
   };
-  
+
   WebApp.start();
 
 })(this); // function(Nuvola)
