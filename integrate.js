@@ -101,6 +101,17 @@
 
     try
     {
+      if (Mixcloud.globalScope.webPlayer.playerOpen === false || Mixcloud.globalScope.webPlayer.paused === true || playerScope.playing === false)
+      {
+        this.state = PlaybackState.PAUSED;
+      } else if (playerScope.playing === true)
+      {
+        this.state = PlaybackState.PLAYING;
+      } else
+      {
+        this.state = PlaybackState.UNKNOWN;
+      }
+      
       if (Mixcloud.globalScope.webPlayer.playerOpen === true)
       {
         var playerScope = $(document.querySelector(Mixcloud.config.player)).scope().player;
@@ -120,24 +131,13 @@
           track.artist = playerScope.nowPlaying.currentDisplayTrack.artist;
         }
       }
-
-      if (Mixcloud.globalScope.webPlayer.paused === true || playerScope.playing === false)
-      {
-        this.state = PlaybackState.PAUSED;
-      } else if (playerScope.playing === true)
-      {
-        this.state = PlaybackState.PLAYING;
-      } else
-      {
-        this.state = PlaybackState.UNKNOWN;
-      }
     } catch (e)
     {
-      this.state = PlaybackState.UNKNOWN;
+      console.log(e);
     }
 
     player.setTrack(track);
-    player.setPlaybackState(this.state);
+    player.setPlaybackState(this.state || PlaybackState.UNKNOWN);
     player.setCanPlay(this.state === PlaybackState.PAUSED);
     player.setCanPause(this.state === PlaybackState.PLAYING);
 
@@ -172,13 +172,19 @@
   // Handler of playback actions
   WebApp._onActionActivated = function(emitter, name, param)
   {
-    // switch (name)
-    // {
-    // case PlayerAction.TOGGLE_PLAY:
-    // case PlayerAction.PLAY:
+    try{
+     switch (name)
+     {
+     case PlayerAction.TOGGLE_PLAY:
+     case PlayerAction.PLAY:
+       if(Mixcloud.globalScope.webPlayer.playerOpen === false){
+         Nuvola.clickOnElement(document.querySelector('.sub-header-play-button'));
+       }else{
+         
+       }
     // case PlayerAction.PAUSE:
     // Nuvola.clickOnElement(Mixcloud.player);
-    // break;
+     break;
     // case PlayerAction.STOP:
     // if (Mixcloud.player.className.indexOf('pause-state') > -1)
     // {
@@ -193,7 +199,10 @@
     // Nuvola.clickOnElement(Mixcloud.prevBtn.querySelector(".cloudcast-row-image"));
     // Mixcloud.refreshUpNextBtns = true;
     // break;
-    // }
+     }
+    }catch(e){
+      console.log(e);
+    }
   };
 
   WebApp.start();
