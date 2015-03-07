@@ -145,8 +145,7 @@
       }
     } catch (e)
     {
-      // gracefull fallback with default status when needed
-      console.log(e);
+      // gracefull fallback
     }
 
     player.setTrack(track);
