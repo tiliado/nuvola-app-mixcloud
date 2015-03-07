@@ -24,8 +24,7 @@
 
 "use strict";
 
-(function(Nuvola)
-{
+(function(Nuvola) {
 
   // media player component
   var player = Nuvola.$object(Nuvola.MediaPlayer);
@@ -44,47 +43,50 @@
       "player": "div.player-wrapper"
     },
     "html": {
+      "wrapper": ["div", {
+        "style": "display:none"
+      }],
       "playAllBtn": ["span", {
-        "class": "ng-hide",
-        "m-play-all-button": null
+        "m-play-all-button": ""
+      }],
+      "playBtn": ["span", {
+        "m-player-play-button": ""
       }]
     }
   };
 
   // initialization
-  WebApp._onInitWebWorker = function(emitter)
-  {
+  WebApp._onInitWebWorker = function(emitter) {
     Nuvola.WebApp._onInitWebWorker.call(this, emitter);
 
     var state = document.readyState;
-    if (state === "interactive" || state === "complete")
-    {
+    if (state === "interactive" || state === "complete") {
       this._onPageReady();
-    } else
-    {
+    } else {
       document.addEventListener("DOMContentLoaded", this._onPageReady.bind(this));
     }
   };
 
   // page is ready for magic
-  WebApp._onPageReady = function()
-  {
+  WebApp._onPageReady = function() {
     // connect handler for signal ActionActivated
     Nuvola.actions.connect("ActionActivated", this);
 
     // JS API will compile our custom scope
-    Mixcloud.playAll = Nuvola.makeElement.apply(this, Mixcloud.html.playAllBtn);
-    document.body.appendChild(Mixcloud.playAll);
+    Mixcloud.customWrapper = Nuvola.makeElement.apply(this, Mixcloud.html.wrapper);
+    Mixcloud.playAllBtn = Nuvola.makeElement.apply(this, Mixcloud.html.playAllBtn);
+    Mixcloud.playBtn = Nuvola.makeElement.apply(this, Mixcloud.html.playBtn);
+    Mixcloud.customWrapper.appendChild(Mixcloud.playAllBtn);
+    Mixcloud.customWrapper.appendChild(Mixcloud.playBtn)
+    document.body.appendChild(Mixcloud.customWrapper);
 
     // start update routine
     this.timeout = setInterval(this._setCallback.bind(this), 100);
   };
 
   // callback function for Mixcloud JS API
-  WebApp._setCallback = function()
-  {
-    try
-    {
+  WebApp._setCallback = function() {
+    try {
       // Scopes are ready
       Mixcloud.globalScope = $(document.querySelector(Mixcloud.scope.global)).scope();
       Mixcloud.playerScope = $(document.querySelector(Mixcloud.scope.player)).scope();
@@ -94,15 +96,13 @@
 
       // Start update routine
       this.update();
-    } catch (e)
-    {
+    } catch (e) {
       // JS API probably not ready yet
     }
   };
 
   // Extract data from the web page
-  WebApp.update = function()
-  {
+  WebApp.update = function() {
     var track = {
       title: null,
       artist: null,
@@ -110,18 +110,13 @@
       artLocation: null
     }, state = PlaybackState.UNKNOWN;
 
-    try
-    {
-      if (Mixcloud.globalScope.webPlayer.playerOpen)
-      {
-        if (Mixcloud.playerScope.player.buffering)
-        {
+    try {
+      if (Mixcloud.globalScope.webPlayer.playerOpen) {
+        if (Mixcloud.playerScope.player.buffering) {
           state = PlaybackState.UNKNOWN;
-        } else if (Mixcloud.playerScope.player.playing)
-        {
+        } else if (Mixcloud.playerScope.player.playing) {
           state = PlaybackState.PLAYING;
-        } else
-        {
+        } else {
           state = PlaybackState.PAUSED;
         }
 
@@ -131,21 +126,18 @@
         track.artLocation = Nuvola.format("https:{1}", Mixcloud.playerScope.player.currentCloudcast.widgetImage);
         track.album = Nuvola.format("{1} by {2}", track.album.title, track.album.artist);
 
-        if (Mixcloud.playerScope.player.nowPlaying.currentDisplayTrack == null)
-        {
+        if (Mixcloud.playerScope.player.nowPlaying.currentDisplayTrack == null) {
           track.title = track.artist = null;
-        } else
-        {
+        } else {
           track.title = Mixcloud.playerScope.player.nowPlaying.currentDisplayTrack.title;
           track.artist = Mixcloud.playerScope.player.nowPlaying.currentDisplayTrack.artist;
         }
-      } else
-      {
+      } else {
         state = PlaybackState.PAUSED;
       }
-    } catch (e)
-    {
+    } catch (e) {
       // gracefull fallback
+      console.log(e);
     }
 
     player.setTrack(track);
@@ -182,36 +174,30 @@
   };
 
   // Handler of playback actions
-  WebApp._onActionActivated = function(emitter, name, param)
-  {
-    try
-    {
-      switch (name)
-      {
-        case PlayerAction.TOGGLE_PLAY:
-        case PlayerAction.PLAY:
-          if (Mixcloud.globalScope.webPlayer.playerOpen === false)
-          {
-            Nuvola.clickOnElement(Mixcloud.playAll);
-          } else
-          {
-            Mixcloud.playerScope.player.togglePlayClick();
-          }
-        case PlayerAction.STOP:
-        case PlayerAction.PAUSE:
+  WebApp._onActionActivated = function(emitter, name, param) {
+    try {
+      switch (name) {
+      case PlayerAction.TOGGLE_PLAY:
+      case PlayerAction.PLAY:
+        if (Mixcloud.globalScope.webPlayer.playerOpen === false) {
+          Nuvola.clickOnElement(Mixcloud.playAllBtn);
+        } else {
           Mixcloud.playerScope.player.togglePlayClick();
-          break;
-        // case PlayerAction.NEXT_SONG:
-        // Nuvola.clickOnElement(Mixcloud.nextBtn.querySelector(".cloudcast-row-image"));
-        // Mixcloud.refreshUpNextBtns = true;
-        // break;
-        // case PlayerAction.PREV_SONG:
-        // Nuvola.clickOnElement(Mixcloud.prevBtn.querySelector(".cloudcast-row-image"));
-        // Mixcloud.refreshUpNextBtns = true;
-        // break;
+        }
+      case PlayerAction.STOP:
+      case PlayerAction.PAUSE:
+        Mixcloud.playerScope.player.togglePlayClick();
+        break;
+      // case PlayerAction.NEXT_SONG:
+      // Nuvola.clickOnElement(Mixcloud.nextBtn.querySelector(".cloudcast-row-image"));
+      // Mixcloud.refreshUpNextBtns = true;
+      // break;
+      // case PlayerAction.PREV_SONG:
+      // Nuvola.clickOnElement(Mixcloud.prevBtn.querySelector(".cloudcast-row-image"));
+      // Mixcloud.refreshUpNextBtns = true;
+      // break;
       }
-    } catch (e)
-    {
+    } catch (e) {
       console.log(e);
     }
   };
