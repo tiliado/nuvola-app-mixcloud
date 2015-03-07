@@ -51,9 +51,6 @@
     }
   };
 
-  // '<span class="button sub-header-play-button ng-scope"
-  // m-play-all-button="">Play Chart</span>'
-
   // initialization
   WebApp._onInitWebWorker = function(emitter)
   {
