@@ -1,0 +1,353 @@
+<div class="card-tag-cloud tags-3 chart-tags-2">
+    <a class="tag tag-small in-chart" title="lounge" href="/tag/lounge/"><span
+        class="tag-wrap">lounge</span><span class="chart-number"
+        m-tooltip="6th in the Lounge chart">6th</span></a><a
+        class="tag tag-small in-chart" title="chillout" href="/tag/chillout/"><span
+        class="tag-wrap">chillout</span><span class="chart-number"
+        m-tooltip="7th in the Chillout chart">7th</span></a><a
+        class="tag tag-small " title="dj set" href="/tag/dj-set/"><span
+        class="tag-wrap">dj set</span></a>
+</div>
+<div class="card-stats cf">
+    <a class="card-plays"
+        href="/juanramongimenezsanchez36/remember-chillout-ambient-mix-17/listeners/"
+        m-tooltip="Plays">942</a><span class="card-time" m-tooltip="Length">54m</span><span
+        class="card-date" m-tooltip="Date Uploaded"><time>4 days
+            ago</time></span>
+</div>
+<div class="card-footer cf">
+    <span class="button card-button button-favorite light-icon  right cf"
+        ng-class="{ 'toggled': toggled }" m-ajax-toggle-count="76"
+        m-ref="cloudcast_card" m-ref-tracking="favorite"
+        m-ref-category="sign_up_source" m-ajax-toggle
+        m-ajax-toggle-url-on="/favorites/juanramongimenezsanchez36/remember-chillout-ambient-mix-17/favorite/"
+        m-ajax-toggle-url-off="/favorites/juanramongimenezsanchez36/remember-chillout-ambient-mix-17/unfavorite/"
+        m-ajax-toggle-type="favorite"
+        m-tooltip="[[toggled && 'Favorited' || 'Favorite']]"
+        m-fb-permissions="publish_actions"><span class="toggle-number"
+        ng-show="!!toggleCount" ng-bind="toggleCount|number">76</span></span>
+    <div class="button card-button button-repost light-icon right"
+        m-tooltip="[[toggled && 'Undo Repost' || 'Repost']]"
+        m-ajax-toggle-count="19" ng-class="{ 'toggled': toggled }"
+        m-ref="cloudcast_card" m-ref-tracking="repost"
+        m-ref-category="sign_up_source" m-ajax-toggle
+        m-ajax-toggle-url-on="/repost/juanramongimenezsanchez36/remember-chillout-ambient-mix-17/"
+        m-ajax-toggle-url-off="/repost/juanramongimenezsanchez36/remember-chillout-ambient-mix-17/delete/"
+        m-ajax-toggle-type="repost" m-fb-permissions="publish_actions">
+        <span class="toggle-number" ng-show="!!toggleCount"
+            ng-bind="toggleCount|number">19</span>
+    </div>
+    <div class="button card-button button-share light-icon left"
+        m-tooltip="Share"
+        m-dialog="/share-dialog/cloudcast/juanramongimenezsanchez36/remember-chillout-ambient-mix-17/"></div>
+    <div class="button card-button button-add light-icon left"
+        ng-class="{'popover-open': open}" m-tooltip="Add To"
+        m-popover="/playlists/juanramongimenezsanchez36/remember-chillout-ambient-mix-17/add-to-collection-popover/"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="infinitescroll-end" m-masonry-last
+    m-next-page-url="/?page=2" m-trigger-distance="1500">
+    <div class="cloud-static loading"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="search-results-container ng-hide" ng-show="search.searching"
+    m-infinite-scroll-container m-scroll-only m-scroll-container>
+    <div class="empty-feed-message empty-search" ng-hide="search.query">Start
+        typing to search.</div>
+    <span ng-show="search.loading" class="ng-hide search-loading spin"></span>
+    <div class="search-results cf" m-search-results="/search/results/"></div>
+    <div class="player-height-placeholder"
+        ng-class="{'player-open':webPlayer.playerOpen,'up-next-open':webPlayer.upNextOpen}"></div>
+</div>
+<div class="player-height-placeholder"
+    ng-class="{'player-open':webPlayer.playerOpen,'up-next-open':webPlayer.upNextOpen}"></div>
+<div class="ng-hide player-wrapper z2" ng-controller="PlayerQueueCtrl"
+    ng-show="webPlayer.playerOpen" m-source-detail="Player">
+    <div class="player cf"
+        ng-class="{ 'player-no-timestamp': !player.nowPlaying.currentDisplayTrack.title && !player.nowPlaying.currentDisplayTrack.chapter && !player.playingPreroll, 'player-no-follow-button': player.isFollowing || player.hideFollow }">
+        <div class="player-error"
+            ng-class="{ 'player-error-shown': player.error }">
+            <h5 class="player-error-title">Oh snap, there was a playback
+                error!</h5>
+            <p class="player-error-desc">Press play to try again.</p>
+        </div>
+        <div class="player-error"
+            ng-class="{ 'player-error-shown':!player.hasFormatSupport }">
+            <h5 class="player-error-title">Streaming on Mixcloud requires
+                Flash!</h5>
+            <p class="player-error-desc">
+                You can get it <a href="http://get.adobe.com/flashplayer/"
+                    target="_blank">here</a>.
+            </p>
+        </div>
+        <div class="player-cloudcast-image z1"
+            style="background-color: #[[player.currentCloudcast.primaryColor]]">
+            <img ng-src="[[player.currentCloudcast.wwwThumbnail]]" width="60"
+                height="60" ng-show="player.currentCloudcast.wwwThumbnail"
+                alt="[[player.currentCloudcast.title]]">
+        </div>
+        <div class="player-cloudcast-image-overlay"></div>
+        <div class="player-control"
+            ng-class="{'pause-state':!player.buffering && player.playing, 'loading-state': player.buffering, 'spin': player.buffering}"
+            m-player-play-button></div>
+        <div class="player-cloudcast-details"
+            ng-class="{'player-cloudcast-details-wide': !!player.repostUrl}">
+            <a ng-href="[[player.currentCloudcast.url]]"
+                class="player-cloudcast-title"
+                ng-bind="player.currentCloudcast.title"></a>
+            <h6 class="player-cloudcast-author">
+                <span ng-show="player.currentCloudcast.owner"
+                    class="cloudcast-by-word">By </span><a
+                    class="player-cloudcast-author-link"
+                    ng-href="[[player.currentCloudcast.ownerUrl]]"
+                    m-hover-card="[[player.currentCloudcast.hovercardUrl]]"
+                    ng-bind="player.currentCloudcast.owner"></a><span
+                    class="player-follow-button"
+                    ng-hide="!player.followUrl || player.isFollowing || player.hideFollow"
+                    m-toggled="[[player.isFollowing]]" m-ajax-toggle
+                    m-ajax-toggle-type="player_follow" m-ref="player"
+                    m-ajax-toggle-url-on="[[player.followUrl]]"
+                    m-ajax-toggle-url-off="[[player.unfollowUrl]]">Follow</span>
+            </h6>
+            <div class="player-cloudcast-icons z1 cf"
+                ng-class="{'player-cloudcast-icons-wide': !!player.repostUrl}"
+                ng-show="player.currentCloudcast.url">
+                <span class="player-icons favorite"
+                    ng-class="{ 'favorite-state': toggled, disabled: !player.favoriteUrl }"
+                    m-toggled="[[player.isFavorited]]" m-ref-tracking="player_favorite"
+                    m-ref-category="sign_up_source" m-ajax-toggle
+                    m-chained-action-on="player_favorite"
+                    m-ajax-toggle-url-on="[[player.favoriteUrl]]"
+                    m-ajax-toggle-url-off="[[player.unfavoriteUrl]]"
+                    m-click-event-tracking m-category="player_button"
+                    m-action="player_favorite"> <span
+                    class="icon-favorite-inner" ng-show="toggled" m-tooltip="Favorited"></span><span
+                    class="icon-favorite-inner" ng-show="!toggled" m-tooltip="Favorite"></span>
+                    <div m-chained-action="player_favorite"
+                        m-chained-action-url="[[player.favoriteChainedActionUrl]]"
+                        class="popover chained-popover chained-player-favorite ng-hide"
+                        m-stop-propagation="mousedown touchstart click fastclick"></div>
+                </span> <span class="player-icons add" m-tooltip="Add to Playlist"
+                    m-popover="[[player.addToCollectionPopoverUrl]]" m-fixed-popover
+                    ng-class="{ 'disabled': !player.addToCollectionPopoverUrl, 'add-open': !!dialog }"
+                    m-click-event-tracking m-category="player_button"
+                    m-action="player_add"></span><span class="player-icons share"
+                    m-tooltip="Share" m-dialog="[[player.shareDialogUrl]]"
+                    m-click-event-tracking m-category="player_button"
+                    m-action="player_share"></span><span class="player-icons repost"
+                    ng-show="!!player.repostUrl" ng-class="{ 'toggled': toggled }"
+                    m-toggled="[[player.isReposted]]" m-ref-tracking="player_repost"
+                    m-ref-category="sign_up_source" m-ajax-toggle
+                    m-ajax-toggle-url-on="[[player.repostUrl]]"
+                    m-ajax-toggle-url-off="[[player.repostDeleteUrl]]"
+                    m-ref="player_www" m-click-event-tracking
+                    m-category="player_button" m-action="player_repost"><span
+                    class="icon-repost-inner" ng-show="toggled" m-tooltip="Reposted"></span><span
+                    class="icon-repost-inner" ng-show="!toggled" m-tooltip="Repost"></span></span>
+                <span class="player-icons comment"
+                    m-tooltip="[[postUrl && 'Comment' || 'Comments disabled by uploader']]"
+                    ng-class="{'comment-open':dropdown.shown, 'comment-disabled':!postUrl}"
+                    ng-controller="DropdownCtrl" m-comment-popover
+                    m-ref-tracking="player_comment" m-ref-category="sign_up_source"
+                    m-click-event-tracking m-category="player_button"
+                    m-action="player_comment">
+                    <div class="popover comment-popover"
+                        ng-class="{'comment-popover-error':postError}"
+                        ng-show="dropdown.shown && postUrl" ng-controller="CommentCtrl">
+                        <div class="chained-header">
+                            <div class="chained-title">Leave a comment</div>
+                        </div>
+                        <div class="comment-content">
+                            <div class="form-message message-success ng-hide"
+                                ng-show="commentPopover.success">Comment submitted</div>
+                            <div class="form-message message-error ng-hide"
+                                ng-show="postError" ng-bind="postError"></div>
+                            <div ng-hide="commentPopover.success" class="cf">
+                                <textarea ng-model="commentData.comment"
+                                    class="input-style general-textbox" m-focus="dropdown.shown"></textarea>
+                                <input type="button" m-click="postComment(commentData)"
+                                    m-require-logged-in
+                                    class="button extra-small-button blue-button right"
+                                    value="Post Comment" />
+                            </div>
+                        </div>
+                    </div>
+                </span>
+            </div>
+        </div>
+        <div class="player-mid-wrapper">
+            <div class="player-playbar">
+                <div class="player-waveform" m-waveform="[[player.waveformUrl]]"
+                    m-waveform-mirrored
+                    m-waveform-redraw="!player.nowPlaying.currentDisplayTrack.title && !player.nowPlaying.currentDisplayTrack.chapter"></div>
+                <div class="player-scrubber" m-player-time>
+                    <div class="player-time" ng-bind="sliderAudioPosition|hmmss">0:00:00</div>
+                    <div class="player-time end-time">
+                        -<span ng-bind="timeRemaining()|hmmss">0:00:00</span>
+                    </div>
+                    <div m-slider-container class="player-scrubber-buffered"
+                        m-style-width="player.latestSeekablePosition|percentageComplete:player.audioLength">
+                        <div class="player-scrubber-listened"
+                            m-style-width="sliderAudioPosition|percentageComplete:player.latestSeekablePosition">
+                            <div class="player-handle" m-slider-button>
+                                <div m-chained-action="player_listened_5_minutes"
+                                    m-chained-action-url="[[player.listenChainedActionUrl]]"
+                                    class="popover chained-popover chained-player-listen ng-hide"
+                                    m-stop-propagation="mousedown touchstart click fastclick"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="player-current-audio"
+                    ng-class="{'current-audio-playing':!player.buffering && player.playing}">
+                    <span class="current-track"
+                        ng-bind="player.nowPlaying.currentDisplayTrack.title"
+                        ng-show="player.nowPlaying.currentDisplayTrack.title"></span><span
+                        class="current-artist"
+                        ng-show="player.nowPlaying.currentDisplayTrack.title"> by <span
+                        ng-bind="player.nowPlaying.currentDisplayTrack.artist"></span><a
+                        ng-href="[[player.nowPlaying.currentDisplayTrack.buyUrl]]"
+                        target="_blank"
+                        ng-show="player.nowPlaying.currentDisplayTrack.buyUrl"
+                        class="buy-current-track">&nbsp; &mdash; Buy</a></span><span
+                        class="current-chapter"
+                        ng-bind="player.nowPlaying.currentDisplayTrack.chapter"></span><span
+                        class="current-chapter" ng-show="player.playingPreroll">Starting
+                        in <span ng-bind="player.audioLength - player.audioPosition"></span>...
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="player-now-playing"
+            ng-class="{'tracklist-open':dropdown.shown}"
+            m-tooltip="[[player.nowPlaying.displayTracklist.length && 'Tracklist' || 'No Tracklist Supplied']]"
+            ng-controller="DropdownCtrl" m-click="dropdown.shown=!dropdown.shown"
+            m-stop-propagation>
+            <span class="player-now-playing-icon"></span>
+            <div class="player-tracklist"
+                ng-show="player.nowPlaying.displayTracklist.length && dropdown.shown"
+                m-stop-propagation="click mousedown touchstart">
+                <ul class="popover-tracklist-container">
+                    <li class="popover-track-row hidden-tracklist-row cf"
+                        ng-show="player.shouldHideTracklist && player.currentCloudcast.featuringArtists && player.currentCloudcast.featuringArtists.length > 0">
+                        This Cloudcast features tracks by <span
+                        ng-repeat="artist in player.currentCloudcast.featuringArtists"><strong
+                            ng-bind="artist"></strong><span ng-hide="$last">, </span></span><span
+                        ng-show="player.currentCloudcast.moreFeaturingArtists"> and
+                            more</span>.
+                    </li>
+                    <li
+                        class="popover-track-row hidden-tracklist-row hidden-tracklist-row-icon cf"
+                        ng-show="player.shouldHideTracklist"><a
+                        href="http://support.mixcloud.com/customer/portal/articles/1595557-us-licensing-tracklist-rules"
+                        class="faq-link-popover">Keep listening to reveal tracklist.</a></li>
+                    <li class="popover-track-row cf"
+                        ng-repeat="section in player.nowPlaying.displayTracklist"
+                        ng-class="{ 'now-playing': player.nowPlaying.currentDisplayTrack == section }"><span
+                        ng-show="section.title" class="popover-track-details"><a
+                            ng-href="[[section.trackUrl]]" ng-hide="!section.trackUrl"
+                            class="title" ng-bind="section.title"></a><span
+                            ng-show="!section.trackUrl" class="title" ng-bind="section.title"></span><span
+                            ng-hide="!section.artistUrl" class="artist">By <a
+                                ng-href="[[section.artistUrl]]" class="mx-link"
+                                ng-bind="section.artist"></a></span><span ng-show="!section.artistUrl"
+                            class="artist">By <span class="mx-link"
+                                ng-bind="section.artist"></span><a ng-href="[[section.buyUrl]]"
+                                target="_blank" ng-show="section.buyUrl" class="buy"></a></span></span><span
+                        ng-show="section.chapter" class="popover-chapter-details"><span
+                            class="title chapter" ng-bind="section.chapter"></span></span><span
+                        class="popover-track-number" ng-bind="addOne($index)"></span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="player-volume-toggle">
+            <span class="player-volume-toggle-icon"></span>
+            <div class="player-volume-amount"
+                ng-class="{ muted: player.volume == 0, half: player.volume > 0 &amp;&amp; player.volume <= 0.5, full: player.volume > 0.5 }"></div>
+            <div class="player-volume-container">
+                <div class="player-volume-track" m-volume-slider="player.volume">
+                    <div class="player-volume-percent" m-volume-slider-bar></div>
+                </div>
+            </div>
+        </div>
+        <span class="player-next-toggle"
+            m-click="webPlayer.upNextOpen=!webPlayer.upNextOpen"
+            ng-class="{ 'up-next-open': webPlayer.upNextOpen }"> NEXT<span
+            class="toggle-arrow"></span></span>
+    </div>
+    <div class="up-next-area"
+        ng-class="{ 'up-next-open': webPlayer.upNextOpen }" m-side-scroll
+        m-scroll-container>
+        <div class="up-next-learn"
+            ng-class="{ 'up-next-learn-double': playerQueue.upNext }"
+            ng-show="playerQueue.cloudcastQueue.length < 2">
+            To add Cloudcasts here use the buttons marked <span
+                class="button card-button button-add light-icon">&nbsp;</span>
+        </div>
+        <div m-player-queue class="cf">
+            <div
+                ng-repeat="cloudcast in playerQueue.cloudcastQueue track by playerQueue.makeHashKey(cloudcast)"
+                m-player-queue-item class="cloudcast-row cloudcast-upnext-row cf"
+                ng-class="{'now-playing':cloudcast.nowPlaying}">
+                <div class="cloudcast-row-image"
+                    m-click="playerQueue.playFromQueue(cloudcast)"
+                    style="background-color: #[[cloudcast.primaryColor]];">
+                    <span class="play-button play-button-cloudcast-row" title="Play"><span
+                        class="play-button-background"></span><span
+                        class="play-button-ring"></span><span class="play-button-play"></span></span><img
+                        ng-src="[[cloudcast.wwwThumbnail]]" ng-show="cloudcast.title"
+                        width="60" height="60" alt="[[cloudcast.title]]">
+                </div>
+                <div class="cloudcast-row-details cf" ng-show="cloudcast.title"
+                    m-draggable>
+                    <div class="upnext-move-helper"></div>
+                    <h5 class="player-cloudcast-name">
+                        <span ng-bind="cloudcast.title"></span>
+                    </h5>
+                    <h6 class="player-cloudcast-owner">
+                        By <span ng-bind="cloudcast.owner"></span>
+                    </h6>
+                </div>
+                <div class="close" ng-hide="cloudcast.nowPlaying"
+                    m-click="playerQueue.removeItem($index)"
+                    m-stop-propagation="mousedown touchstart click fastclick"></div>
+            </div>
+            <div
+                class="cloudcast-row cloudcast-upnext-row cloudcast-suggested-row cf"
+                ng-class="{'promoted': playerQueue.upNext.nextCloudcast.promoted}"
+                m-up-next ng-show="playerQueue.upNext && !playerQueue.upNext.hide">
+                <div class="cloudcast-row-image" m-click="playerQueue.playUpNext()"
+                    style="background-color: #[[playerQueue.upNext.nextCloudcast.primaryColor]];">
+                    <span class="play-button play-button-cloudcast-row" title="Play"><span
+                        class="play-button-background"></span><span
+                        class="play-button-ring"></span><span class="play-button-play"></span></span><img
+                        ng-src="[[playerQueue.upNext.nextCloudcast.wwwThumbnail]]"
+                        width="60" height="60"
+                        alt="[[playerQueue.upNext.nextCloudcast.title]]">
+                </div>
+                <div class="cloudcast-row-details cf">
+                    <h5 class="player-cloudcast-name">
+                        <span ng-bind="playerQueue.upNext.nextCloudcast.title"></span>
+                    </h5>
+                    <h6 class="player-cloudcast-owner">
+                        By <span ng-bind="playerQueue.upNext.nextCloudcast.owner"></span>
+                    </h6>
+                </div>
+                <div class="suggested-row-title-block">
+                    <span ng-cloak ng-hide="playerQueue.upNext.nextCloudcast.promoted">Suggested:</span><span
+                        ng-cloak ng-show="playerQueue.upNext.nextCloudcast.promoted">Featured:</span>
+                </div>
+                <div class="close" m-click="playerQueue.upNext.hide=true"
+                    m-stop-propagation="mousedown touchstart click fastclick"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<div class="modal-blackout ng-hide"
+    ng-class="{'b-o-modal':modals.modalOverlay}"
+    ng-show="modals.modalOverlay" m-click="modalsHighlander.releaseAll()"></div>
