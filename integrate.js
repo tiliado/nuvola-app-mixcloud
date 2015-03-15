@@ -39,6 +39,7 @@ var nuvola = (function(Nuvola) {
   var Mixcloud = {
     "nodes": {},
     "scopes": {},
+    "cloudcast": {},
     "html": {
       "wrapper": ["div", {
         "style": "display:none"
@@ -82,11 +83,11 @@ var nuvola = (function(Nuvola) {
       // API loaded
       clearInterval(this.timeout);
 
-      // load initial playback state
-      this._watchPlaybackStatusAndUpdateNodes();
-
       // Start update routine
       this.update();
+
+      // load initial playback state
+      this._watchPlaybackStatusAndUpdateNodes();
     } catch (e) {
       // JS API probably not ready yet
     }
@@ -135,8 +136,8 @@ var nuvola = (function(Nuvola) {
     player.setCanPlay(state === PlaybackState.PAUSED);
     player.setCanPause(state === PlaybackState.PLAYING);
 
-    player.setCanGoNext(!!Mixcloud.scopes.prevTrack);
-    player.setCanGoPrev(!!Mixcloud.scopes.prevTrack);
+    player.setCanGoNext(null !== Mixcloud.cloudcast.next);
+    player.setCanGoPrev(null !== Mixcloud.cloudcast.prev);
 
     // Schedule the next update
     setTimeout(this.update.bind(this), 500);
@@ -181,28 +182,71 @@ var nuvola = (function(Nuvola) {
     Mixcloud.scopes.PlayerQueueCtrl = $(document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
   }
 
+  // playback watch callback
+  WebApp._updatePlaybackStatusCallback = function() {
+//    Mixcloud.scopes.curTrack = Mixcloud.nodes.nextTrack = 
+    Mixcloud.scopes.prevTrack = Mixcloud.scopes.nextTrack = null;
+    Mixcloud.nodes.curTrack = document.querySelector('.now-playing[m-player-queue-item]');
+    Mixcloud.scopes.curTrack = Mixcloud.nodes.curTrack === null ? null : $(Mixcloud.nodes.curTrack).scope();
+
+    if (Mixcloud.scopes.curTrack !== null) {
+      var siblings = this._getSiblings(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast);
+
+      Mixcloud.cloudcast.next = siblings.next;
+      Mixcloud.cloudcast.next = siblings.prev;
+    }
+
+//    try {
+//      Mixcloud.scopes.nextTrack = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.upNext.nextCloudcast;
+//    } catch (e) {
+//    }
+//
+//    try {
+//      Mixcloud.scopes.prevTrack = Mixcloud.scopes.curTrack.$$prevSibling.cloudcast ? Mixcloud.scopes.curTrack.$$prevSibling : null
+//    } catch (e) {
+//    }
+
+  };
+
+  WebApp._getSiblings = function(current) {
+    var siblings = {
+      "next": null,
+      "prev": null
+    };
+
+    try {
+      var qMax = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue.length;
+
+      for (var i = 0; i < qMax; i++) {
+        if (current.hash === Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[i]) {
+          siblings.prev = i > 0 ? Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[i - 1] : null;
+          siblings.next = i < (qMax - 1) ? Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[i + 1] : null;
+          
+          break;
+        }
+      }
+    } catch (e) {
+    }
+
+    console.log("sibling", siblings);
+    return siblings;
+  };
+
   // current track playback detection by watching buffer
   WebApp._watchPlaybackStatusAndUpdateNodes = function() {
     try {
+      // initial run
+      this._updatePlaybackStatusCallback();
+
+      // set up the watcher
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
-        return $scope.player.buffering;
-      }, function(buffering, wasBuffering, scope) {
-        if (!buffering && scope.player.playing) {
-          Mixcloud.scopes.curTrack = Mixcloud.nodes.nextTrack = Mixcloud.scopes.prevTrack = null;
-
-          Mixcloud.nodes.curTrack = document.querySelector('.now-playing[m-player-queue-item]');
-          Mixcloud.scopes.curTrack = Mixcloud.nodes.curTrack === null ? null : $(Mixcloud.nodes.curTrack).scope();
-
-          Mixcloud.scopes.nextTrack = Mixcloud.scopes.curTrack && Mixcloud.scopes.curTrack.$$nextSibling && Mixcloud.scopes.curTrack.$$nextSibling.cloudcast ? Mixcloud.scopes.curTrack.$$nextSibling
-                  : null;
-
-          Mixcloud.scopes.prevTrack = Mixcloud.scopes.curTrack && Mixcloud.scopes.curTrack.$$prevSibling.cloudcast ? Mixcloud.scopes.curTrack.$$prevSibling : null;
-        } else if (buffering) {
-          Mixcloud.scopes.curTrack = Mixcloud.scopes.nextTrack = Mixcloud.scopes.prevTrack = null;
-        }
+        return JSON.stringify($scope.playerQueue.cloudcastQueue);
+      }, function(cloudcastQueue, oldValue, scope) {
+        WebApp._updatePlaybackStatusCallback();
       });
     } catch (e) {
       // silent fallback
+      console.log(e);
     }
   };
 
