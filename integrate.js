@@ -132,7 +132,7 @@ var nuvola = (function(Nuvola) {
         state = PlaybackState.PAUSED;
       }
     } catch (e) {
-      // gracefull fallback withdefault settings
+      // gracefull fallback withdefault settings@jokeyrhyme
     }
 
     player.setTrack(track);
@@ -217,6 +217,7 @@ var nuvola = (function(Nuvola) {
       console.log(e);
     }
 
+    console.log("sibling", siblings);
     Mixcloud.cloudcast = siblings;
   };
 
@@ -226,11 +227,20 @@ var nuvola = (function(Nuvola) {
       // initial run
       this._updatePlaybackStatusCallback();
 
-      // set up the watcher
+      // watch playback queue
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
         return JSON.stringify($scope.playerQueue.cloudcastQueue);
       }, function(cloudcastQueue, oldValue, scope) {
         WebApp._updatePlaybackStatusCallback();
+      });
+
+      // watch suggested tracks
+      Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
+        return Mixcloud.scopes.PlayerQueueCtrl.playerQueue.upNext;
+      }, function(upNext) {
+        if (upNext !== null && upNext.hasOwnProperty("nextCloudcast")) {
+          Mixcloud.cloudcast.next = upNext.nextCloudcast;
+        }
       });
     } catch (e) {
       // silent fallback
@@ -255,8 +265,7 @@ var nuvola = (function(Nuvola) {
 
   return {
     debug: function() {
-      if (console) console.log(Mixcloud);
-      return;
+      if (console) console.log(Mixcloud,Nuvola);
     }
   };
 
