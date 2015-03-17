@@ -1,6 +1,7 @@
 update current, next, previous on :
 	- current track changes
 	- tracklist changes
+	- suggested track is loaded
 	
 update track infos on :
 	- current track changes
