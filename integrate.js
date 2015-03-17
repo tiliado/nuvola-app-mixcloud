@@ -87,7 +87,7 @@ var nuvola = (function(Nuvola) {
       clearInterval(this.timeout);
 
       // Start update routine
-      this.update();
+//      this.update();
 
       // load initial playback state
       this._watchPlaybackStatusAndUpdateNodes();
@@ -96,8 +96,8 @@ var nuvola = (function(Nuvola) {
     }
   };
 
-  // Extract data from the web page
-  WebApp.update = function() {
+  // Extract data from the JS API
+  WebApp._updatePlaybackInfos = function() {
     var track = {
       title: null,
       artist: null,
@@ -131,7 +131,7 @@ var nuvola = (function(Nuvola) {
         state = PlaybackState.PAUSED;
       }
     } catch (e) {
-      // gracefull fallback withdefault settings@jokeyrhyme
+      // gracefull fallback withdefault settings
     }
 
     player.setTrack(track);
@@ -143,7 +143,7 @@ var nuvola = (function(Nuvola) {
     player.setCanGoPrev(Mixcloud.cloudcast.prev !== null);
 
     // Schedule the next update
-    setTimeout(this.update.bind(this), 500);
+//    setTimeout(this.update.bind(this), 500);
   };
 
   // Handler of playback actions
@@ -213,7 +213,7 @@ var nuvola = (function(Nuvola) {
       }, function(track) {
         if (!WebApp._isEmpty(track)) {
           console.info('current track changed!');
-          WebApp._updatePlaybackStatusCallback();
+          WebApp._updatePlaybackInfos();
         }
       });
 
