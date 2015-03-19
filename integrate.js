@@ -238,7 +238,6 @@ var nuvola = (function(Nuvola) {
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
         return Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast;
       }, function(track) {
-        console.log(arguments);
         if (!WebApp._isEmpty(track)) {
           console.info('# Track loaded into the player!');
           WebApp._updateCurrentTrackInfos();
@@ -357,6 +356,22 @@ var nuvola = (function(Nuvola) {
     }
     return true;
   };
+  
+  var hasPath = function hasPath (obj, ks) {
+    if (typeof ks == "string") ks = ks.split(".");
+
+    var numKeys = ks.length;
+
+    if (obj == null && numKeys > 0) return false;
+
+    if (!(ks[0] in obj)) return false;
+
+    if (numKeys === 1) return true;
+    
+    var cur = ks.shift();
+
+    return hasPath(obj[cur], ks);
+  }
 
   WebApp.start();
 
