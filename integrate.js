@@ -122,44 +122,42 @@ var nuvola = (function(Nuvola) {
   };
 
   WebApp._updateCurrentTrackInfos = function() {
+    var track = {};
     if (WebApp._hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, "currentCloudcast")) {
-      Mixcloud.track.album = {};
+      track.album = {};
 
-      Mixcloud.track.album.artist = WebApp._hasPath(
-              Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, "owner")
-              ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.owner : null;
+      track.album.artist = WebApp._hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
+              "owner") ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.owner : null;
 
-      Mixcloud.track.album.title = WebApp._hasPath(
-              Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, "title")
-              ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.title : null;
+      track.album.title = WebApp._hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
+              "title") ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.title : null;
 
-      Mixcloud.track.album = Nuvola.format("{1} by {2}", Mixcloud.track.album.title,
-              Mixcloud.track.album.artist);
+      track.album = Nuvola.format("{1} by {2}", track.album.title, track.album.artist);
 
-      Mixcloud.track.artLocation = WebApp._hasPath(
-              Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, "widgetImage") ? Nuvola
-              .format("https:{1}",
-                      Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
+      track.artLocation = WebApp._hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
+              "widgetImage") ? Nuvola.format("https:{1}",
+              Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
     } else {
-      Mixcloud.track.album = Mixcloud.track.artLocation = null;
+      track.album = track.artLocation = null;
     }
 
     if (WebApp
             ._hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, "nowPlaying", "currentDisplayTrack")) {
-      Mixcloud.track.artist = WebApp._hasPath(
+      track.artist = WebApp._hasPath(
               Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack, "artist")
               ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack.artist : null;
 
-      Mixcloud.track.title = WebApp._hasPath(
+      track.title = WebApp._hasPath(
               Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack, "title")
               ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack.title : null;
     } else {
-      Mixcloud.track.artist = Mixcloud.track.title = null;
+      track.artist = Mixcloud.track.title = null;
     }
 
-    player.setTrack(Mixcloud.track);
+    player.setTrack(track);
+    Mixcloud.track = track;
 
-    console.log("so we update track infos..", Mixcloud.track);
+    console.log("so we updated track infos..");
   };
 
   WebApp._loadDefaultStates = function() {
@@ -240,6 +238,7 @@ var nuvola = (function(Nuvola) {
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
         return Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast;
       }, function(track) {
+        console.log(arguments);
         if (!WebApp._isEmpty(track)) {
           console.info('# Track loaded into the player!');
           WebApp._updateCurrentTrackInfos();
@@ -251,10 +250,8 @@ var nuvola = (function(Nuvola) {
                 "currentDisplayTrack")
                 ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack : null;
       }, function(track) {
-        if (track && !WebApp._isEmpty(track)) {
-          console.log('# Track title changed in the player!');
-          WebApp._updateCurrentTrackInfos();
-        }
+        console.log('# Track title changed in the player!');
+        WebApp._updateCurrentTrackInfos();
       });
 
       // watch suggested tracks
@@ -263,9 +260,9 @@ var nuvola = (function(Nuvola) {
       }, function(upNext) {
         if (upNext !== null && upNext.hasOwnProperty("nextCloudcast")) {
           console.log("# suggested track detected!");
-          
+
           Mixcloud.cloudcast.next = upNext.nextCloudcast;
-          
+
           console.log("so we updated the next suggested track..");
         }
       });
