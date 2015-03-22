@@ -228,6 +228,7 @@ var nuvola = (function(Nuvola) {
         }
       });
 
+      // watch player info changes
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
         return _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
             "currentDisplayTrack"])
@@ -259,7 +260,7 @@ var nuvola = (function(Nuvola) {
 
   // update previous & next track
   WebApp._refreshNextPrevCloudcast = function() {
-    // pick now playing track
+    // pick the  playing track
     for (var i = 0; i < Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue.length; i++) {
       if (Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[i].nowPlaying) {
         this._getSiblings(i);
@@ -315,7 +316,6 @@ var nuvola = (function(Nuvola) {
 
   // Handler of playback actions
   WebApp._onActionActivated = function(emitter, name, param) {
-    var index;
     try {
       switch (name) {
       case PlayerAction.TOGGLE_PLAY:
@@ -347,7 +347,6 @@ var nuvola = (function(Nuvola) {
           "message": "Not supported."
         };
       }
-      throw nuvola;
     } catch (e) {
       _logger.error(e);
     }
