@@ -304,21 +304,47 @@ var nuvola = (function(Nuvola) {
     document.body.appendChild(Mixcloud.nodes.wrapper);
   };
 
+  // resume or play all
+  WebApp._doPlay = function() {
+    if (Mixcloud.scopes.global.webPlayer.playerOpen === false) {
+      Nuvola.clickOnElement(Mixcloud.nodes.playAll);
+    } else {
+      WebApp._doPause();
+    }
+  };
+
+  // pause track
+  WebApp._doPause = function() {
+    Mixcloud.scopes.PlayerQueueCtrl.player.togglePlayClick();
+  };
+
+  // stop track and seek to the start point
+  WebApp._doStop = function() {
+    Mixcloud.scopes.PlayerQueueCtrl.player.togglePlayClick();
+    Mixcloud.scopes.PlayerQueueCtrl.$emit("slider:stop", 0);
+  };
+
   // playback actions controller
   WebApp._onActionActivated = function(emitter, name) {
     try {
       switch (name) {
       case PlayerAction.TOGGLE_PLAY:
-      case PlayerAction.PLAY:
         if (Mixcloud.state === PlaybackState.PLAYING) {
-          return;
-        } else if (Mixcloud.scopes.global.webPlayer.playerOpen === false) {
-          Nuvola.clickOnElement(Mixcloud.nodes.playAll);
+          WebApp._doPause();
         } else {
-          Mixcloud.scopes.PlayerQueueCtrl.player.togglePlayClick();
+          WebApp._doPlay();
+        }
+        break;
+      case PlayerAction.PLAY:
+        if (Mixcloud.state !== PlaybackState.PLAYING) {
+          WebApp._doPlay();
         }
         break;
       case PlayerAction.STOP:
+        if (Mixcloud.state === PlaybackState.PLAYING) {
+          WebApp._doStop();
+        }
+        break;
       case PlayerAction.PAUSE:
         if (Mixcloud.state === PlaybackState.PLAYING) {
           Mixcloud.scopes.PlayerQueueCtrl.player.togglePlayClick();
@@ -337,9 +363,7 @@ var nuvola = (function(Nuvola) {
         Mixcloud.scopes.PlayerQueueCtrl.playerQueue.playFromQueue(Mixcloud.cloudcast.prev);
         break;
       default:
-        throw {
-          "message": "Not supported."
-        };
+        throw "Not supported action : " + name;
       }
     } catch (e) {
       _logger.error(e);
