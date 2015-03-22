@@ -21,9 +21,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
-
 var nuvola = (function(Nuvola) {
+  // Function-level strict mode
+  'use strict';
+
   // verbose mode
   var _debug = false;
 
@@ -188,7 +189,7 @@ var nuvola = (function(Nuvola) {
     Mixcloud.scopes.global = $(document.body).scope();
     Mixcloud.scopes.PlayerQueueCtrl = $(
             document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
-  }
+  };
 
   // watch data
   WebApp._setupWatchers = function() {
@@ -196,7 +197,7 @@ var nuvola = (function(Nuvola) {
       // watch playback queue
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
         return JSON.stringify($scope.playerQueue.cloudcastQueue);
-      }, function(cloudcastQueue, oldValue, scope) {
+      }, function(cloudcastQueue) {
         if (!_isEmpty(cloudcastQueue)) {
           _logger.event("Playback queue changed!");
           WebApp._refreshNextPrevCloudcast();
@@ -219,11 +220,11 @@ var nuvola = (function(Nuvola) {
       // watch track change
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
         return Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast;
-      }, function(track, oldValue, scope) {
+      }, function(track) {
         if (!_isEmpty(track)) {
           _logger.event('Track loaded into the player!');
           _defer(function() {
-            WebApp._updateCurrentTrackInfos()
+            WebApp._updateCurrentTrackInfos();
           });
         }
       });
@@ -233,7 +234,7 @@ var nuvola = (function(Nuvola) {
         return _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
             "currentDisplayTrack"])
                 ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack : null;
-      }, function(track) {
+      }, function() {
         _logger.event('Track title changed in the player!');
         _defer(function() {
           WebApp._updateCurrentTrackInfos();
@@ -248,7 +249,7 @@ var nuvola = (function(Nuvola) {
           _logger.event("Suggested track detected!");
 
           Mixcloud.cloudcast.suggested = upNext.nextCloudcast;
-          _player && _player.setCanGoNext(Mixcloud.cloudcast.suggested !== null);
+          _player.setCanGoNext(Mixcloud.cloudcast.suggested !== null);
 
           _logger.success();
         }
@@ -277,7 +278,9 @@ var nuvola = (function(Nuvola) {
       "prev": null
     };
 
-    _player && _player.setCanGoNext(false) && _player.setCanGoPrevious(false);
+    if (_player && _player.setCanGoNext(false)) {
+      _player.setCanGoPrevious(false);
+    }
   };
 
   // extract next and previous track candidate
@@ -315,7 +318,7 @@ var nuvola = (function(Nuvola) {
   };
 
   // Handler of playback actions
-  WebApp._onActionActivated = function(emitter, name, param) {
+  WebApp._onActionActivated = function(emitter, name) {
     try {
       switch (name) {
       case PlayerAction.TOGGLE_PLAY:
@@ -370,18 +373,23 @@ var nuvola = (function(Nuvola) {
         } else if (flag && flag !== state && window.console) {
           logger = window.console;
           state = flag;
-          _hasPath(window, ["console", "info"]) && window.console.info("log to console activated!");
+          if (_hasPath(window, ["console", "info"])) {
+            window.console.info("log to console activated!");
+          }
         } else if (!flag && flag !== state) {
           logger = internal;
           state = flag;
-          _hasPath(window, ["console", "info"])
-                  && window.console.info("log to internal app activated!");
+          if (_hasPath(window, ["console", "info"])) {
+            window.console.info("log to internal app activated!");
+          }
         } else {
           throw "Debug is already set to : " + state;
         }
       },
       "log": function() {
-        _log && logger.log.apply(state && window.console ? window.console : this, arguments);
+        if (_log) {
+          logger.log.apply(state && window.console ? window.console : this, arguments);
+        }
       },
       "success": function() {
         if (_log) {
@@ -397,7 +405,11 @@ var nuvola = (function(Nuvola) {
       },
       "error": function(obj) {
         if (_debug && _log) {
-          state ? logger.error.call(window.console, obj) : this.log.call(this, JSON.stringify(obj));
+          if (state) {
+            logger.error.call(window.console, obj);
+          } else {
+            this.log.call(this, JSON.stringify(obj))
+          }
         }
       }
     };
@@ -421,12 +433,12 @@ var nuvola = (function(Nuvola) {
   var _hasPath = function hasPath(obj, keys) {
     if (typeof keys == "string") keys = keys.split(".");
     var numKeys = keys.length;
-    if (obj == null && numKeys > 0) return false;
+    if (obj === null && numKeys > 0) return false;
     if (!(keys[0] in obj)) return false;
     if (numKeys === 1) return true;
     var first = keys.shift();
     return hasPath(obj[first], keys);
-  }
+  };
 
   WebApp.start();
 
