@@ -99,8 +99,8 @@ var nuvola = (function(Nuvola) {
   // callback function for Mixcloud JS API
   WebApp._setCallback = function() {
     try {
-      // Scopes are ready
-      this._loadCustomScopes();
+      // API ready
+      this._loadApiObjects();
 
       // API loaded
       clearInterval(this.timeout);
@@ -108,7 +108,7 @@ var nuvola = (function(Nuvola) {
       // reset playback states
       this._reset();
 
-      // load initial playback state
+      // add custom listeners
       this._setupWatchers();
     } catch (e) {
       // JS API probably not ready yet
@@ -116,24 +116,7 @@ var nuvola = (function(Nuvola) {
     }
   };
 
-  // Extract data from the JS API
-  WebApp._updatePlaybackInfos = function() {
-    if (Mixcloud.scopes.PlayerQueueCtrl.player.buffering) {
-      state = PlaybackState.UNKNOWN;
-    } else if (Mixcloud.scopes.PlayerQueueCtrl.player.playing) {
-      state = PlaybackState.PLAYING;
-    } else {
-      state = PlaybackState.PAUSED;
-    }
-
-    _player.setPlaybackState(state);
-    _player.setCanPlay(state === PlaybackState.PAUSED);
-    _player.setCanPause(state === PlaybackState.PLAYING);
-
-    _player.setCanGoNext(Mixcloud.cloudcast.next !== null);
-    _player.setCanGoPrev(Mixcloud.cloudcast.prev !== null);
-  };
-
+  // update current track
   WebApp._updateCurrentTrackInfos = function() {
     var track = {};
     if (_hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["currentCloudcast"])) {
@@ -172,7 +155,7 @@ var nuvola = (function(Nuvola) {
     _logger.success();
   };
 
-  // Wipe the current playstate
+  // set defaults 
   WebApp._reset = function() {
     _logger.event("Nuvola reset");
     _player.setCanPlay(false);
@@ -184,8 +167,8 @@ var nuvola = (function(Nuvola) {
     _logger.success();
   };
 
-  // build up custom scopes
-  WebApp._loadCustomScopes = function() {
+  // load API scopes
+  WebApp._loadApiObjects = function() {
     Mixcloud.scopes.global = $(document.body).scope();
     Mixcloud.scopes.PlayerQueueCtrl = $(
             document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
@@ -209,7 +192,7 @@ var nuvola = (function(Nuvola) {
         return Mixcloud.scopes.PlayerQueueCtrl.player.playing;
       }, function(playing) {
         _logger.event('playback state updated!');
-        var state = (playing === true) ? PlaybackState.PLAYING : PlaybackState.PAUSED;
+        var state = (playing === true) ? PlaybackState.PLAYING : PlaybackState.UNKNOWN;
         _player.setPlaybackState(state);
         _player.setCanPlay(state === PlaybackState.PAUSED);
         _player.setCanPause(state === PlaybackState.PLAYING);
@@ -278,7 +261,11 @@ var nuvola = (function(Nuvola) {
       "prev": null
     };
 
-    if (_player && _player.setCanGoNext(false)) {
+    if (_hasPath(_player, ["setCanGoNext"])) {
+      _player.setCanGoNext(false);
+    }
+
+    if (_hasPath(_player, ["setCanGoPrevious"])) {
       _player.setCanGoPrevious(false);
     }
   };
@@ -317,13 +304,15 @@ var nuvola = (function(Nuvola) {
     document.body.appendChild(Mixcloud.nodes.wrapper);
   };
 
-  // Handler of playback actions
+  // playback actions controller
   WebApp._onActionActivated = function(emitter, name) {
     try {
       switch (name) {
       case PlayerAction.TOGGLE_PLAY:
       case PlayerAction.PLAY:
-        if (Mixcloud.scopes.global.webPlayer.playerOpen === false) {
+        if (Mixcloud.state === PlaybackState.PLAYING) {
+          return void 0;
+        } else if (Mixcloud.scopes.global.webPlayer.playerOpen === false) {
           Nuvola.clickOnElement(Mixcloud.nodes.playAll);
         } else {
           Mixcloud.scopes.PlayerQueueCtrl.player.togglePlayClick();
@@ -331,14 +320,16 @@ var nuvola = (function(Nuvola) {
         break;
       case PlayerAction.STOP:
       case PlayerAction.PAUSE:
-        Mixcloud.scopes.PlayerQueueCtrl.player.togglePlayClick();
+        if (Mixcloud.state === PlaybackState.PLAYING) {
+          Mixcloud.scopes.PlayerQueueCtrl.player.togglePlayClick();
+        }
         break;
       case PlayerAction.NEXT_SONG:
         if (Mixcloud.cloudcast.next) {
-          _logger.log("play next!");
+          _logger.event("play next!");
           Mixcloud.scopes.PlayerQueueCtrl.playerQueue.playFromQueue(Mixcloud.cloudcast.next);
         } else {
-          _logger.log("play suggested!");
+          _logger.event("play suggested!");
           Mixcloud.scopes.PlayerQueueCtrl.playerQueue.playUpNext();
         }
         break;
@@ -362,6 +353,7 @@ var nuvola = (function(Nuvola) {
     // Nuvola log
     internal.log = this.log.bind(this);
 
+    // logger state mode
     state = _console && console;
     logger = state ? window.console : internal;
 
