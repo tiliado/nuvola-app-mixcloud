@@ -116,45 +116,6 @@ var nuvola = (function(Nuvola) {
     }
   };
 
-  // update current track
-  WebApp._updateCurrentTrackInfos = function() {
-    var track = {};
-    if (_hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["currentCloudcast"])) {
-      track.album = {};
-
-      track.album.artist = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
-              ["owner"]) ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.owner : null;
-
-      track.album.title = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
-              ["title"]) ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.title : null;
-
-      track.album = Nuvola.format("{1} by {2}", track.album.title, track.album.artist);
-
-      track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
-              "widgetImage") ? Nuvola.format("https:{1}",
-              Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
-    } else {
-      track.album = track.artLocation = null;
-    }
-
-    if (_hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying", "currentDisplayTrack"])) {
-      track.artist = _hasPath(
-              Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack, "artist")
-              ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack.artist : null;
-
-      track.title = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack,
-              "title")
-              ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack.title : null;
-    } else {
-      track.artist = Mixcloud.track.title = null;
-    }
-
-    _player.setTrack(track);
-    Mixcloud.track = track;
-
-    _logger.success();
-  };
-
   // set defaults 
   WebApp._reset = function() {
     _logger.event("Nuvola reset");
@@ -194,7 +155,7 @@ var nuvola = (function(Nuvola) {
         _logger.event('playback state updated!');
         var state = (playing === true) ? PlaybackState.PLAYING : PlaybackState.UNKNOWN;
         _player.setPlaybackState(state);
-        _player.setCanPlay(state === PlaybackState.PAUSED);
+        _player.setCanPlay(state === PlaybackState.UNKNOWN || state === PlaybackState.PAUSED);
         _player.setCanPause(state === PlaybackState.PLAYING);
         Mixcloud.state = state;
         _logger.success();
@@ -251,7 +212,7 @@ var nuvola = (function(Nuvola) {
         _player.setCanGoNext(Mixcloud.cloudcast.next !== null);
         _player.setCanGoPrev(Mixcloud.cloudcast.prev !== null);
         _logger.success();
-        return void 0;
+        return;
       }
     }
 
@@ -291,6 +252,45 @@ var nuvola = (function(Nuvola) {
     Mixcloud.cloudcast = siblings;
   };
 
+  // update current track
+  WebApp._updateCurrentTrackInfos = function() {
+    var track = {};
+    if (_hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["currentCloudcast"])) {
+      track.album = {};
+
+      track.album.artist = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
+              ["owner"]) ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.owner : null;
+
+      track.album.title = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
+              ["title"]) ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.title : null;
+
+      track.album = Nuvola.format("{1} by {2}", track.album.title, track.album.artist);
+
+      track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
+              "widgetImage") ? Nuvola.format("https:{1}",
+              Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
+    } else {
+      track.album = track.artLocation = null;
+    }
+
+    if (_hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying", "currentDisplayTrack"])) {
+      track.artist = _hasPath(
+              Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack, "artist")
+              ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack.artist : null;
+
+      track.title = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack,
+              "title")
+              ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack.title : null;
+    } else {
+      track.artist = Mixcloud.track.title = null;
+    }
+
+    _player.setTrack(track);
+    Mixcloud.track = track;
+
+    _logger.success();
+  };
+
   // build custom elements and attach to DOM
   WebApp._injectCustomNodestoDom = function() {
     // build
@@ -311,7 +311,7 @@ var nuvola = (function(Nuvola) {
       case PlayerAction.TOGGLE_PLAY:
       case PlayerAction.PLAY:
         if (Mixcloud.state === PlaybackState.PLAYING) {
-          return void 0;
+          return;
         } else if (Mixcloud.scopes.global.webPlayer.playerOpen === false) {
           Nuvola.clickOnElement(Mixcloud.nodes.playAll);
         } else {
@@ -400,7 +400,7 @@ var nuvola = (function(Nuvola) {
           if (state) {
             logger.error.call(window.console, obj);
           } else {
-            this.log.call(this, JSON.stringify(obj))
+            this.log.call(this, JSON.stringify(obj));
           }
         }
       }
