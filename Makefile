@@ -21,7 +21,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Service integration id
-APP_ID = soundcloud
+APP_ID = mixcloud
 # Dependencies
 DEPS = rsvg-convert
 # Default installation destination
