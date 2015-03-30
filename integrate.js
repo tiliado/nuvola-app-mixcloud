@@ -26,13 +26,13 @@ var nuvola = (function(Nuvola) {
   'use strict';
 
   // verbose mode
-  var _debug = false;
+  var _debug = true;
 
   // activate logs
-  var _log = false;
+  var _log = true;
 
   // log to nuvola app by default
-  var _console = false;
+  var _console = true;
 
   // media player component
   var _player = Nuvola.$object(Nuvola.MediaPlayer);
@@ -131,8 +131,7 @@ var nuvola = (function(Nuvola) {
   // load API scopes
   WebApp._loadApiObjects = function() {
     Mixcloud.scopes.global = $(document.body).scope();
-    Mixcloud.scopes.PlayerQueueCtrl = $(
-            document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
+    Mixcloud.scopes.PlayerQueueCtrl = $(document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
   };
 
   // watch data
@@ -167,22 +166,16 @@ var nuvola = (function(Nuvola) {
       }, function(track) {
         if (!_isEmpty(track)) {
           _logger.event('Track loaded into the player!');
-          _defer(function() {
-            WebApp._updateCurrentTrackInfos();
-          });
+          WebApp._updateCurrentTrackInfos();
         }
       });
 
       // watch player info changes
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
-        return _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
-            "currentDisplayTrack"])
-                ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack : null;
+        return _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying", "currentDisplayTrack"]);
       }, function() {
         _logger.event('Track title changed in the player!');
-        _defer(function() {
-          WebApp._updateCurrentTrackInfos();
-        });
+        WebApp._updateCurrentTrackInfos();
       });
 
       // watch suggested tracks
@@ -240,11 +233,9 @@ var nuvola = (function(Nuvola) {
 
     try {
       siblings.next = currentCloudcastIndex < (Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue.length - 1)
-              ? Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[currentCloudcastIndex + 1]
-              : null;
+              ? Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[currentCloudcastIndex + 1] : null;
       siblings.prev = currentCloudcastIndex > 0
-              ? Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[currentCloudcastIndex - 1]
-              : null;
+              ? Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[currentCloudcastIndex - 1] : null;
     } catch (e) {
       _logger.error(e);
     }
@@ -258,37 +249,33 @@ var nuvola = (function(Nuvola) {
     if (_hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["currentCloudcast"])) {
       track.album = {};
 
-      track.album.artist = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
-              ["owner"]) ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.owner : null;
+      track.album.artist = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["owner"]);
 
-      track.album.title = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
-              ["title"]) ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.title : null;
+      track.album.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["title"]);
 
       track.album = Nuvola.format("{1} by {2}", track.album.title, track.album.artist);
 
-      track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
-              "widgetImage") ? Nuvola.format("https:{1}",
-              Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
+      track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, "widgetImage") ? Nuvola
+              .format("https:{1}", Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
     } else {
       track.album = track.artLocation = null;
     }
 
     if (_hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying", "currentDisplayTrack"])) {
-      track.artist = _hasPath(
-              Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack, "artist")
+      track.artist = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack, "artist")
               ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack.artist : null;
 
-      track.title = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack,
-              "title")
-              ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack.title : null;
+      track.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack, "title");
     } else {
       track.artist = Mixcloud.track.title = null;
     }
 
     _player.setTrack(track);
-    Mixcloud.track = track;
-
-    _logger.success();
+    
+    _defer(function() {
+        Mixcloud.track = track;
+        _logger.success();
+    });
   };
 
   // build custom elements and attach to DOM
@@ -433,7 +420,12 @@ var nuvola = (function(Nuvola) {
 
   // should prevent angular "$digest already in progress" issue
   var _defer = function(callback) {
-    return setTimeout.call(this, callback, 333.333);
+    try{
+      return callback.call();
+    }catch(e){
+      console.log(e);
+      setTimeout.call(this, _defer.bind(this, callback), 100);
+    }
   };
 
   // checks empty object
@@ -446,15 +438,28 @@ var nuvola = (function(Nuvola) {
 
   // Returns a boolean indicating whether there is a property at the path 
   // described by the keys given in string or array format
-  var _hasPath = function hasPath(obj, keys) {
-    if (typeof keys == "string") keys = keys.split(".");
+  var _hasPath = function(obj, keys) {
+    if (typeof obj !== "object")
+      return false;
+    else if (typeof keys == "string") keys = keys.split(".");
     var numKeys = keys.length;
     if (obj === null && numKeys > 0) return false;
     if (!(keys[0] in obj)) return false;
     if (numKeys === 1) return true;
     var first = keys.shift();
-    return hasPath(obj[first], keys);
+    return _hasPath(obj[first], keys);
   };
+
+  // runs _hasPath and returns path or null if failed
+  var _getPath = function(obj, keys) {
+    var getPath = function(obj, keys) {
+      if (typeof keys !== "object") return obj;
+      var first = keys.shift();
+      return getPath(obj[first]);
+    };
+
+    return typeof obj == "object" && _hasPath.apply(this, arguments) ? getPath.apply(this, arguments) : null;
+  }
 
   WebApp.start();
 
