@@ -21,10 +21,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-var nuvola = (function(Nuvola) {
-  // Function-level strict mode
-  'use strict';
+'use strict';
 
+var nuvola = (function(Nuvola) {
   // verbose mode
   var _debug = true;
 
@@ -152,12 +151,14 @@ var nuvola = (function(Nuvola) {
         return Mixcloud.scopes.PlayerQueueCtrl.player.playing;
       }, function(playing) {
         _logger.event('playback state updated!');
-        var state = (playing === true) ? PlaybackState.PLAYING : PlaybackState.UNKNOWN;
-        _player.setPlaybackState(state);
-        _player.setCanPlay(state === PlaybackState.UNKNOWN || state === PlaybackState.PAUSED);
-        _player.setCanPause(state === PlaybackState.PLAYING);
-        Mixcloud.state = state;
-        _logger.success();
+        _defer(function() {
+          var state = (playing === true) ? PlaybackState.PLAYING : PlaybackState.UNKNOWN;
+          _player.setPlaybackState(state);
+          _player.setCanPlay(state === PlaybackState.UNKNOWN || state === PlaybackState.PAUSED);
+          _player.setCanPause(state === PlaybackState.PLAYING);
+          Mixcloud.state = state;
+          _logger.success();
+        });
       });
 
       // watch track change
@@ -166,7 +167,9 @@ var nuvola = (function(Nuvola) {
       }, function(track) {
         if (!_isEmpty(track)) {
           _logger.event('Track loaded into the player!');
-          WebApp._updateCurrentTrackInfos();
+          _defer(function() {
+            WebApp._updateCurrentTrackInfos();
+          });
         }
       });
 
@@ -175,7 +178,9 @@ var nuvola = (function(Nuvola) {
         return _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying", "currentDisplayTrack"]);
       }, function() {
         _logger.event('Track title changed in the player!');
-        WebApp._updateCurrentTrackInfos();
+        _defer(function() {
+          WebApp._updateCurrentTrackInfos();
+        });
       });
 
       // watch suggested tracks
@@ -184,11 +189,11 @@ var nuvola = (function(Nuvola) {
       }, function(upNext) {
         if (_hasPath(upNext, ["nextCloudcast"])) {
           _logger.event("Suggested track detected!");
-
-          Mixcloud.cloudcast.suggested = upNext.nextCloudcast;
-          _player.setCanGoNext(Mixcloud.cloudcast.suggested !== null);
-
-          _logger.success();
+          _defer(function() {
+            Mixcloud.cloudcast.suggested = upNext.nextCloudcast;
+            _player.setCanGoNext(Mixcloud.cloudcast.suggested !== null);
+            _logger.success();
+          });
         }
       });
     } catch (e) {
@@ -270,11 +275,10 @@ var nuvola = (function(Nuvola) {
       track.artist = Mixcloud.track.title = null;
     }
 
-    _player.setTrack(track);
-    
     _defer(function() {
-        Mixcloud.track = track;
-        _logger.success();
+      _player.setTrack(track);
+      Mixcloud.track = track;
+      _logger.success();
     });
   };
 
@@ -420,10 +424,9 @@ var nuvola = (function(Nuvola) {
 
   // should prevent angular "$digest already in progress" issue
   var _defer = function(callback) {
-    try{
-      return callback.call();
-    }catch(e){
-      console.log(e);
+    if (null === Mixcloud.scopes.global.$$phase) {
+      Mixcloud.scopes.global.$apply(callback);
+    } else {
       setTimeout.call(this, _defer.bind(this, callback), 100);
     }
   };
