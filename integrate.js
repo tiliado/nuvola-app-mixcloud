@@ -25,13 +25,13 @@
 
 var nuvola = (function(Nuvola) {
   // verbose mode
-  var _debug = true;
+  var _debug = false;
 
   // activate logs
-  var _log = true;
+  var _log = false;
 
   // log to nuvola app by default
-  var _console = true;
+  var _console = false;
 
   // media player component
   var _player = Nuvola.$object(Nuvola.MediaPlayer);
