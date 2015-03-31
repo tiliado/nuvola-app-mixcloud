@@ -66,6 +66,7 @@ var nuvola = (function(Nuvola) {
       }]
     },
     "state": PlaybackState.UNKNOWN,
+    "stoped" : false
   };
 
   // initialization
@@ -153,7 +154,7 @@ var nuvola = (function(Nuvola) {
       }, function(playing) {
         _logger.event('playback state updated!');
         _defer(function() {
-          var state = (playing === true) ? PlaybackState.PLAYING : PlaybackState.UNKNOWN;
+          var state = (playing === true) ? PlaybackState.PLAYING : Mixcloud.stopped ? PlaybackState.UNKNOWN : PlaybackState.PAUSED;
           _player.setPlaybackState(state);
           _player.setCanPlay(state === PlaybackState.UNKNOWN || state === PlaybackState.PAUSED);
           _player.setCanPause(state === PlaybackState.PLAYING);
@@ -191,7 +192,7 @@ var nuvola = (function(Nuvola) {
           _logger.event("Suggested track detected!");
           _defer(function() {
             Mixcloud.cloudcast.suggested = nextCloudcast;
-            _player.setCanGoNext(true);
+            _player.setCanGoNext(true );
             _logger.success();
           });
         }
@@ -277,6 +278,8 @@ var nuvola = (function(Nuvola) {
     } else {
       WebApp._doPause();
     }
+    
+    Mixcloud.stopped = false;
   };
 
   // pause track
@@ -288,6 +291,7 @@ var nuvola = (function(Nuvola) {
   WebApp._doStop = function() {
     Mixcloud.scopes.PlayerQueueCtrl.player.togglePlayClick();
     Mixcloud.scopes.PlayerQueueCtrl.$emit("slider:stop", 0);
+    Mixcloud.stopped = true;
   };
 
   // playback actions controller
