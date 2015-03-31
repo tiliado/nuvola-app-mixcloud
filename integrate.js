@@ -66,6 +66,7 @@ var nuvola = (function(Nuvola) {
       }]
     },
     "state": PlaybackState.UNKNOWN,
+    "stoped": false
   };
 
   // initialization
@@ -130,7 +131,8 @@ var nuvola = (function(Nuvola) {
   // load API scopes
   WebApp._loadApiObjects = function() {
     Mixcloud.scopes.global = $(document.body).scope();
-    Mixcloud.scopes.PlayerQueueCtrl = $(document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
+    Mixcloud.scopes.PlayerQueueCtrl = $(
+            document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
   };
 
   // watch data
@@ -138,11 +140,13 @@ var nuvola = (function(Nuvola) {
     try {
       // watch playback queue
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
-        return JSON.stringify($scope.playerQueue.cloudcastQueue);
+        return $scope.playerQueue.queue.cloudcastList.toArray();
       }, function(cloudcastQueue) {
         if (!_isEmpty(cloudcastQueue)) {
           _logger.event("Playback queue changed!");
-          WebApp._refreshNextPrevCloudcast();
+          _defer(function() {
+            WebApp._refreshNextPrevCloudcast();
+          });
         }
       });
 
@@ -152,7 +156,8 @@ var nuvola = (function(Nuvola) {
       }, function(playing) {
         _logger.event('playback state updated!');
         _defer(function() {
-          var state = (playing === true) ? PlaybackState.PLAYING : PlaybackState.UNKNOWN;
+          var state = (playing === true) ? PlaybackState.PLAYING : Mixcloud.stopped
+                  ? PlaybackState.UNKNOWN : PlaybackState.PAUSED;
           _player.setPlaybackState(state);
           _player.setCanPlay(state === PlaybackState.UNKNOWN || state === PlaybackState.PAUSED);
           _player.setCanPause(state === PlaybackState.PLAYING);
@@ -168,30 +173,33 @@ var nuvola = (function(Nuvola) {
         if (!_isEmpty(track)) {
           _logger.event('Track loaded into the player!');
           _defer(function() {
-            WebApp._updateCurrentTrackInfos();
+            WebApp._updateCurrentAlbum();
+            WebApp._refreshNextPrevCloudcast();
           });
         }
       });
 
       // watch player info changes
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
-        return _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying", "currentDisplayTrack"]);
-      }, function() {
-        _logger.event('Track title changed in the player!');
-        _defer(function() {
-          WebApp._updateCurrentTrackInfos();
-        });
+        return _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
+            "currentDisplayTrack", "title"]);
+      }, function(title, previous) {
+        if (title !== previous) {
+          _logger.event('Track title changed in the player!');
+          WebApp._updateCurrentTitle();
+        }
       });
 
       // watch suggested tracks
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
-        return Mixcloud.scopes.PlayerQueueCtrl.playerQueue.upNext;
-      }, function(upNext) {
-        if (_hasPath(upNext, ["nextCloudcast"])) {
+        return _getPath(Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue, ["upNext",
+            "nextCloudcast"]);
+      }, function(nextCloudcast) {
+        if (nextCloudcast !== null) {
           _logger.event("Suggested track detected!");
           _defer(function() {
-            Mixcloud.cloudcast.suggested = upNext.nextCloudcast;
-            _player.setCanGoNext(Mixcloud.cloudcast.suggested !== null);
+            Mixcloud.cloudcast.suggested = nextCloudcast;
+            _player.setCanGoNext(true);
             _logger.success();
           });
         }
@@ -203,78 +211,51 @@ var nuvola = (function(Nuvola) {
 
   // update previous & next track
   WebApp._refreshNextPrevCloudcast = function() {
-    // pick the  playing track
-    for (var i = 0; i < Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue.length; i++) {
-      if (Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[i].nowPlaying) {
-        this._getSiblings(i);
-        _player.setCanGoNext(Mixcloud.cloudcast.next !== null);
-        _player.setCanGoPrev(Mixcloud.cloudcast.prev !== null);
-        _logger.success();
-        return;
-      }
-    }
+    var currentIndex = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.getNowPlayingIndex();
 
-    // reset on fail
-    Mixcloud.cloudcast = {
-      "next": null,
-      "prev": null
-    };
+    Mixcloud.cloudcast.next = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.cloudcastList
+            .get(currentIndex + 1);
+    Mixcloud.cloudcast.prev = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.cloudcastList
+            .get(currentIndex - 1);
 
-    if (_hasPath(_player, ["setCanGoNext"])) {
-      _player.setCanGoNext(false);
-    }
+    _player.setCanGoNext(typeof Mixcloud.cloudcast.next !== "undefined");
+    _player.setCanGoPrev(typeof Mixcloud.cloudcast.prev !== "undefined");
 
-    if (_hasPath(_player, ["setCanGoPrevious"])) {
-      _player.setCanGoPrevious(false);
-    }
+    _logger.success();
   };
 
-  // extract next and previous track candidate
-  WebApp._getSiblings = function(currentCloudcastIndex) {
-    var siblings = {
-      "next": null,
-      "prev": null
-    };
-
-    try {
-      siblings.next = currentCloudcastIndex < (Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue.length - 1)
-              ? Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[currentCloudcastIndex + 1] : null;
-      siblings.prev = currentCloudcastIndex > 0
-              ? Mixcloud.scopes.PlayerQueueCtrl.playerQueue.cloudcastQueue[currentCloudcastIndex - 1] : null;
-    } catch (e) {
-      _logger.error(e);
-    }
-
-    Mixcloud.cloudcast = siblings;
-  };
-
-  // update current track
-  WebApp._updateCurrentTrackInfos = function() {
+  // sync album infos
+  WebApp._updateCurrentAlbum = function() {
     var track = {};
-    if (_hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["currentCloudcast"])) {
-      track.album = {};
+    track.artist = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["owner"]);
+    track.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["title"]);
 
-      track.album.artist = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["owner"]);
+    track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
+            "widgetImage") ? Nuvola.format("https:{1}",
+            Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
 
-      track.album.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["title"]);
+    this._syncTrack(track);
 
-      track.album = Nuvola.format("{1} by {2}", track.album.title, track.album.artist);
+    _logger.event("Playback changed!");
+  };
 
-      track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, "widgetImage") ? Nuvola
-              .format("https:{1}", Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
+  // sync title infos
+  WebApp._updateCurrentTitle = function() {
+    var track = {};
+    track.artist = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
+        "currentDisplayTrack", "artist"]);
+    track.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
+        "currentDisplayTrack", "title"]);
+
+    if (_isEmpty(track)) {
+      this._updateCurrentAlbum();
     } else {
-      track.album = track.artLocation = null;
+      this._syncTrack(track);
     }
+  };
 
-    if (_hasPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying", "currentDisplayTrack"])) {
-      track.artist = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack, "artist")
-              ? Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack.artist : null;
-
-      track.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.nowPlaying.currentDisplayTrack, "title");
-    } else {
-      track.artist = Mixcloud.track.title = null;
-    }
-
+  WebApp._syncTrack = function(track) {
+    var track = _mergeObject(Mixcloud.track, track);
     _defer(function() {
       _player.setTrack(track);
       Mixcloud.track = track;
@@ -302,6 +283,8 @@ var nuvola = (function(Nuvola) {
     } else {
       WebApp._doPause();
     }
+
+    Mixcloud.stopped = false;
   };
 
   // pause track
@@ -313,6 +296,7 @@ var nuvola = (function(Nuvola) {
   WebApp._doStop = function() {
     Mixcloud.scopes.PlayerQueueCtrl.player.togglePlayClick();
     Mixcloud.scopes.PlayerQueueCtrl.$emit("slider:stop", 0);
+    Mixcloud.stopped = true;
   };
 
   // playback actions controller
@@ -400,7 +384,7 @@ var nuvola = (function(Nuvola) {
       },
       "success": function() {
         if (_log) {
-          var message = "> Nuvola sync done!";
+          var message = "> ok!";
           this.log.call(this, message.toUpperCase());
         }
       },
@@ -427,42 +411,53 @@ var nuvola = (function(Nuvola) {
     if (null === Mixcloud.scopes.global.$$phase) {
       Mixcloud.scopes.global.$apply(callback);
     } else {
-      setTimeout.call(this, _defer.bind(this, callback), 100);
+      setTimeout.call(this, _defer.bind(this, callback), 25);
+      _logger.log("_defer will retry!");
     }
   };
 
   // checks empty object
   var _isEmpty = function(object) {
+    if (object == null || typeof object != "object") return true;
     for ( var key in object) {
-      if (object.hasOwnProperty(key)) return false;
+      if (object.hasOwnProperty(key) && object[key] !== null) return false;
     }
     return true;
+  };
+
+  // Returns the value of the given path or null if incorrect
+  var _getPath = function(obj, keys) {
+    if (typeof obj !== "object") {
+      return null;
+    } else if (typeof keys == "string") {
+      keys = keys.split(".");
+    }
+    var numKeys = keys.length;
+    if (obj === null && numKeys > 0) return null;
+    if (!(keys[0] in obj)) return null;
+    if (numKeys === 1) { return obj[keys]; }
+    var first = keys.shift();
+    return _getPath(obj[first], keys);
   };
 
   // Returns a boolean indicating whether there is a property at the path 
   // described by the keys given in string or array format
   var _hasPath = function(obj, keys) {
-    if (typeof obj !== "object")
-      return false;
-    else if (typeof keys == "string") keys = keys.split(".");
-    var numKeys = keys.length;
-    if (obj === null && numKeys > 0) return false;
-    if (!(keys[0] in obj)) return false;
-    if (numKeys === 1) return true;
-    var first = keys.shift();
-    return _hasPath(obj[first], keys);
+    var value = _getPath.apply(this, arguments);
+    return value !== null;
   };
 
-  // runs _hasPath and returns path or null if failed
-  var _getPath = function(obj, keys) {
-    var getPath = function(obj, keys) {
-      if (typeof keys !== "object") return obj;
-      var first = keys.shift();
-      return getPath(obj[first]);
-    };
-
-    return typeof obj == "object" && _hasPath.apply(this, arguments) ? getPath.apply(this, arguments) : null;
-  }
+  // Overwrites o1's values with o2's and adds o2's if non existent in o1
+  var _mergeObject = function merge_options(o1, o2) {
+    var o3 = {};
+    for ( var attrname in o1) {
+      o3[attrname] = o1[attrname];
+    }
+    for ( var attrname in o2) {
+      o3[attrname] = o2[attrname];
+    }
+    return o3;
+  };
 
   WebApp.start();
 
