@@ -66,7 +66,7 @@ var nuvola = (function(Nuvola) {
       }]
     },
     "state": PlaybackState.UNKNOWN,
-    "stoped" : false
+    "stoped": false
   };
 
   // initialization
@@ -144,7 +144,9 @@ var nuvola = (function(Nuvola) {
       }, function(cloudcastQueue) {
         if (!_isEmpty(cloudcastQueue)) {
           _logger.event("Playback queue changed!");
-          WebApp._refreshNextPrevCloudcast();
+          _defer(function() {
+            WebApp._refreshNextPrevCloudcast();
+          });
         }
       });
 
@@ -154,7 +156,8 @@ var nuvola = (function(Nuvola) {
       }, function(playing) {
         _logger.event('playback state updated!');
         _defer(function() {
-          var state = (playing === true) ? PlaybackState.PLAYING : Mixcloud.stopped ? PlaybackState.UNKNOWN : PlaybackState.PAUSED;
+          var state = (playing === true) ? PlaybackState.PLAYING : Mixcloud.stopped
+                  ? PlaybackState.UNKNOWN : PlaybackState.PAUSED;
           _player.setPlaybackState(state);
           _player.setCanPlay(state === PlaybackState.UNKNOWN || state === PlaybackState.PAUSED);
           _player.setCanPause(state === PlaybackState.PLAYING);
@@ -169,7 +172,10 @@ var nuvola = (function(Nuvola) {
       }, function(track) {
         if (!_isEmpty(track)) {
           _logger.event('Track loaded into the player!');
-          WebApp._updateCurrentAlbum();
+          _defer(function() {
+            WebApp._updateCurrentAlbum();
+            WebApp._refreshNextPrevCloudcast();
+          });
         }
       });
 
@@ -186,13 +192,14 @@ var nuvola = (function(Nuvola) {
 
       // watch suggested tracks
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
-        return _getPath(Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue, ["upNext", "nextCloudcast"]);
+        return _getPath(Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue, ["upNext",
+            "nextCloudcast"]);
       }, function(nextCloudcast) {
         if (nextCloudcast !== null) {
           _logger.event("Suggested track detected!");
           _defer(function() {
             Mixcloud.cloudcast.suggested = nextCloudcast;
-            _player.setCanGoNext(true );
+            _player.setCanGoNext(true);
             _logger.success();
           });
         }
@@ -205,7 +212,7 @@ var nuvola = (function(Nuvola) {
   // update previous & next track
   WebApp._refreshNextPrevCloudcast = function() {
     var currentIndex = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.getNowPlayingIndex();
-    
+
     Mixcloud.cloudcast.next = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.cloudcastList
             .get(currentIndex + 1);
     Mixcloud.cloudcast.prev = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.cloudcastList
@@ -213,29 +220,23 @@ var nuvola = (function(Nuvola) {
 
     _player.setCanGoNext(typeof Mixcloud.cloudcast.next !== "undefined");
     _player.setCanGoPrev(typeof Mixcloud.cloudcast.prev !== "undefined");
-    
+
     _logger.success();
   };
 
   // sync album infos
   WebApp._updateCurrentAlbum = function() {
     var track = {};
-    track.album = {};
-    track.album.artist = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
-            ["owner"]);
-    track.album.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["title"]);
-
-    track.album = track.album.title === null || track.album.album === null ? null : Nuvola.format(
-            "{1} by {2}", track.album.title, track.album.artist);
+    track.artist = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["owner"]);
+    track.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["title"]);
 
     track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
             "widgetImage") ? Nuvola.format("https:{1}",
             Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
 
     this._syncTrack(track);
-    
+
     _logger.event("Playback changed!");
-    this._refreshNextPrevCloudcast();
   };
 
   // sync title infos
@@ -246,7 +247,11 @@ var nuvola = (function(Nuvola) {
     track.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
         "currentDisplayTrack", "title"]);
 
-    this._syncTrack(track);
+    if (_isEmpty(track)) {
+      this._updateCurrentAlbum();
+    } else {
+      this._syncTrack(track);
+    }
   };
 
   WebApp._syncTrack = function(track) {
@@ -278,7 +283,7 @@ var nuvola = (function(Nuvola) {
     } else {
       WebApp._doPause();
     }
-    
+
     Mixcloud.stopped = false;
   };
 
@@ -415,7 +420,7 @@ var nuvola = (function(Nuvola) {
   var _isEmpty = function(object) {
     if (object == null || typeof object != "object") return true;
     for ( var key in object) {
-      if (object.hasOwnProperty(key)) return false;
+      if (object.hasOwnProperty(key) && object[key] !== null) return false;
     }
     return true;
   };
