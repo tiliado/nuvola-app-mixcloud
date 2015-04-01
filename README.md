@@ -7,7 +7,7 @@ Integration of Mixcloud into your linux desktop via
 Support
 -------
 
-Report bugs and issues at <https://github.com/s83/nuvola-app-mixcloud/issues>.
+Report bugs and issues at <https://github.com/tiliado/nuvola-app-mixcloud/issues>.
 
 Installation
 ------------
