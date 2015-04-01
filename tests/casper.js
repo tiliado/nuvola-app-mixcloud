@@ -1,61 +1,72 @@
-casper.test.begin('add & remove todos', 5, function suite(test) {
+var Mixcloud = {
+  "scopes": null,
+  "timeout": null
+};
 
-  var links = [];
-
-  function getTodos() {
-    var todos = document.querySelectorAll('#todo-list li');
-    return todos;
-  }
-
-  casper.start("index.html", function() {
-    links = this.evaluate(getTodos);
-    test.assert((links.length === 0), 'list should be empty');
-  });
-
-  // add new todo
-  casper.then(function() {
-    this.sendKeys('#new-todo', 'casperjs');
-    this.sendKeys('#new-todo', casper.page.event.key.Enter);
-  });
-
-  casper.then(function() {
-    links = this.evaluate(getTodos);
-    test.assert((links.length === 1), 'list should have 1 element');
-  });
-
-  // add new todo
-  casper.then(function() {
-    this.sendKeys('#new-todo', 'testing');
-    this.sendKeys('#new-todo', casper.page.event.key.Enter);
-  });
-
-  casper.then(function() {
-    links = this.evaluate(getTodos);
-    test.assert((links.length === 2), 'list should have 2 elements');
-  });
-
-  // remove first todo
-  casper.then(function() {
-    this.click('#todo-list li .destroy');
-  });
-
-  casper.then(function() {
-    links = this.evaluate(getTodos);
-    test.assert((links.length === 1), 'list should have 1 element');
-  });
-
-  // remove second todo
-  casper.then(function() {
-    this.click('#todo-list li .destroy');
-    this.capture('test.png');
-  });
-
-  casper.then(function() {
-    links = this.evaluate(getTodos);
-    test.assert((links.length === 0), 'list should be empty');
-  });
-
-  casper.run(function() {
-    test.done();
-  });
+var casper = require('casper').create({
+  verbose: true,
+  logLevel: "debug"
 });
+
+var casper = require('casper').create ({
+//  waitTimeout: 15000,
+//  stepTimeout: 15000,
+                  verbose: true,
+                  logLevel: "debug",
+                  viewportSize: {
+                    width: 1024,
+                    height: 768
+                  },
+                  pageSettings: {
+                    "userAgent": 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.10 (KHTML, like Gecko) Chrome/23.0.1262.0 Safari/537.10',
+                    "loadImages": false,
+                    "loadPlugins": false,
+                    "webSecurityEnabled": false,
+                    "ignoreSslErrors": true
+                  }
+                //,
+//  onWaitTimeout: function() {
+//    casper.echo('Wait TimeOut Occured');
+//  },
+//  onStepTimeout: function() {
+//    casper.echo('Step TimeOut Occured');
+//  }
+                });
+
+casper.start('https://www.mixcloud.com');
+
+casper.then(function() {
+  this.debugHTML();
+});
+
+casper.run(function() {
+  this.exit();
+});
+
+// load API scopes
+var loadApiObjects = function() {
+  Mixcloud.scopes.global = $(document.body).scope();
+  Mixcloud.scopes.PlayerQueueCtrl = $(document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
+};
+
+// callback function for Mixcloud JS API
+var _setCallback = function() {
+  try {
+    // API ready
+    loadApiObjects();
+
+    // API loaded
+    clearInterval(Mixcloud.timeout);
+
+    // startTests
+    startTests();
+  } catch (e) {
+    // JS API probably not ready yet
+    console.log('retry');
+  }
+};
+
+var startTests = function() {
+  scopes.global = $(document.body).scope();
+  scopes.PlayerQueueCtrl = $(document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
+};
