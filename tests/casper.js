@@ -3,25 +3,25 @@ var Mixcloud = {
   "timeout": null
 };
 
-Mixcloud.ready = function() {
-  return window.angular != null;
-};
+//Mixcloud.ready = function() {
+//  return window.angular != null;
+//};
 
-Mixcloud.init = function() {
-  this.waitFor(Mixcloud.ready, Mixcloud.loaded, Mixcloud.retry);
-};
-
-Mixcloud.setup = function() {
-  Mixcloud.scopes.global = $(document.body).scope();
-  Mixcloud.scopes.PlayerQueueCtrl = $(
-          document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
-  
-  require('utils').dump(Mixcloud);
-};
-
-Mixcloud.retry = function(){
-  console.info("Angular not ready");
-};
+//Mixcloud.init = function() {
+//  this.waitFor(Mixcloud.ready, Mixcloud.loaded, Mixcloud.retry);
+//};
+//
+//Mixcloud.setup = function() {
+//  Mixcloud.scopes.global = $(document.body).scope();
+//  Mixcloud.scopes.PlayerQueueCtrl = $(
+//          document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
+//  
+//  require('utils').dump(Mixcloud);
+//};
+//
+//Mixcloud.retry = function(){
+//  console.info("Angular not ready");
+//};
 
 var conf = {
   viewportSize: {
@@ -37,21 +37,29 @@ var conf = {
   }
 };
 
+var testCount = 1;
 conf.verbose = true;
 conf.logLevel = "debug";
 
 var casper = require('casper').create(conf);
 
-casper.on('page.initialized', function (page) {
-  console.info("page.initialized");
-});
-
 casper.on('page.resource.requested', function(requestData, request) {
   if (requestData.url.indexOf('mixcloud.com') === -1) {
-      request.abort();
+    request.abort();
   }
 });
 
 casper.start('https://www.mixcloud.com', Mixcloud.init);
 
-casper.run();
+casper.test.begin("Testing Mixcloud", testCount, function redditTest(test) {
+  casper.start("https://www.mixcloud.com");
+  casper.then(function() {
+//    test.assertEval(function() {
+//      return typeof $ != "undefined";
+//    });
+  });
+
+  casper.run(function() {
+    test.done();
+  });
+});
