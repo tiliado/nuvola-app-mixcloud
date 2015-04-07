@@ -1,1 +1,1 @@
-docker run --rm --workdir="/mnt" -v [...]nuvola-app-mixcloud:/mnt oopschen/casperjs:1.1.0-beta3 test --includes=integrate.js tests/casper.js
+docker run --rm --workdir="/tmp/casperjs" -v [...]/nuvola-app-mixcloud:/tmp/casperjs oopschen/casperjs:1.1.0-beta3 test  tests/casper.js
