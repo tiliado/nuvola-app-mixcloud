@@ -13,8 +13,12 @@ dependencies:
 
 test:
   override:
-    - docker run --rm --workdir="/tmp/casperjs" -v $(pwd):/tmp/casperjs oopschen/casperjs:1.1.0-beta3 test  tests/casper.js
+    - docker run --workdir="/tmp/casperjs" -v $(pwd):/tmp/casperjs oopschen/casperjs:1.1.0-beta3 test  tests/casper.js
     
 checkout:
   post:
     - git checkout tests
+
+dependencies:
+  cache_directories:
+    - "~/docker"
