@@ -10,4 +10,5 @@ checkout:
   post:
     - git checkout tests
     - git reset --hard
+    - git config user.name "CircleCi" && git config user.email "circleci@yay.ovh" 
     - git pull origin tests
