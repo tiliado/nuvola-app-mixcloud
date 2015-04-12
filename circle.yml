@@ -9,3 +9,5 @@ test:
 checkout:
   post:
     - git checkout tests
+    - git reset --hard
+    - git pull origin tests
