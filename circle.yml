@@ -13,4 +13,4 @@ test:
     
 checkout:
   post:
-    - checkout tests
+    - git checkout tests
