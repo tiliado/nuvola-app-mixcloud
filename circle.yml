@@ -1,16 +1,18 @@
+general:
+  artifacts:
+    - "tests/screenshot"
+
 machine:
   services:
     - docker
 
-dependencies:
-  override:
-    - docker info
-    - docker pull oopschen/casperjs:1.1.0-beta3
-
 test:
   override:
-    - docker run --rm --workdir="/tmp/casperjs" -v $(pwd):/tmp/casperjs oopschen/casperjs:1.1.0-beta3 test  tests/casper.js
+    - docker run --workdir="/tmp/casperjs" -v $(pwd):/tmp/casperjs oopschen/casperjs:1.1.0-beta3 test  tests/casper.js
     
 checkout:
   post:
-    - checkout tests
+    - git config user.name "CircleCi" && git config user.email "circleci@yay.ovh" 
+    - git checkout -fq tests
+    - git reset --hard origin/tests
+    - git pull origin tests
