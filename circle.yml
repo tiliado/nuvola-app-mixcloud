@@ -1,3 +1,7 @@
+general:
+  artifacts:
+    - "tests/screenshot"
+
 machine:
   services:
     - docker
@@ -8,7 +12,7 @@ test:
     
 checkout:
   post:
-    - git checkout tests
     - git config user.name "CircleCi" && git config user.email "circleci@yay.ovh" 
+    - git checkout -fq tests
     - git reset --hard origin/tests
     - git pull origin tests
