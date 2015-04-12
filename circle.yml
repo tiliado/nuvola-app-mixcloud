@@ -18,7 +18,3 @@ test:
 checkout:
   post:
     - git checkout tests
-
-dependencies:
-  cache_directories:
-    - "~/docker"
