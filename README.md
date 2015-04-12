@@ -1,4 +1,4 @@
-Mixcloud for Nuvola Player 3
+Mixcloud for Nuvola Player 3 [![Circle CI](https://circleci.com/gh/s83/nuvola-app-mixcloud.svg?style=svg)](https://circleci.com/gh/s83/nuvola-app-mixcloud)
 ==========================
 
 Integration of Mixcloud into your linux desktop via
