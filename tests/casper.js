@@ -62,7 +62,7 @@ casper.test.begin("Testing Mixcloud", testCount, function mixcloudTest(test) {
       };
       test.assertEval(testCallback, title);
 
-      require('utils').dump(scope.player.player.nowPlaying);
+      // require('utils').dump(scope.player.player.nowPlaying);
 
       // screenshot
       casper.capture('tests/screenshot/snapshot.png');
