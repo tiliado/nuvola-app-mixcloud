@@ -1,0 +1,16 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker info
+    - docker pull oopschen/casperjs:1.1.0-beta3
+
+test:
+  override:
+    - docker run --rm --workdir="/tmp/casperjs" -v $(pwd):/tmp/casperjs oopschen/casperjs:1.1.0-beta3 test  tests/casper.js
+    
+checkout:
+  post:
+    - checkout tests
