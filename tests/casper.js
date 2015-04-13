@@ -3,8 +3,8 @@ var title, testCallback;
 var scope = {};
 
 // configs
-casper.options.verbose = true;
-casper.options.logLevel = "debug";
+casper.options.verbose = false;
+casper.options.logLevel = "warning";
 casper.options.loadImages = false;
 casper.options.loadPlugins = false;
 casper.options.viewportSize = {
