@@ -9,7 +9,6 @@ dependencies:
     # If there's a base image cached, load it. A click on CircleCI's "Clear
     # Cache" will make sure we start with a clean slate.
     - mkdir -p ~/docker
-    - if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/base.tar; fi
     - if [[ ! -e ~/docker/image.tar ]]; then docker pull "oopschen/casperjs:1.1.0-beta3" && docker save "oopschen/casperjs:1.1.0-beta3" > ~/docker/image.tar; else docker load -i ~/docker/image.tar; fi
 
 machine:
