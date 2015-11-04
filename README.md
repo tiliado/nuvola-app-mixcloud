@@ -20,6 +20,6 @@ Installation
 Copyright
 ---------
 
-  - Copyright 2015 Samuel Mansour <nuvola-app-mixcloud@yay.ovh>
+  - Copyright 2015 Samuel Mansour
   - Copyright 2015 Samuel Mansour (src/icon.svg)
   - License: [2-Clause BSD-license](./LICENSE)
