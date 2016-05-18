@@ -2,14 +2,14 @@
  * Copyright 2015 Samuel Mansour <nuvola-app-mixcloud@yay.ovh>
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met: 
- * 
+ * modification, are permitted provided that the following conditions are met:
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer. 
+ *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution. 
- * 
+ *    and/or other materials provided with the distribution.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -116,7 +116,7 @@ var nuvola = (function(Nuvola) {
     }
   };
 
-  // set defaults 
+  // set defaults
   WebApp._reset = function() {
     _logger.event("Nuvola reset");
     _player.setCanPlay(false);
@@ -231,8 +231,7 @@ var nuvola = (function(Nuvola) {
     track.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["title"]);
 
     track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
-            "widgetImage") ? Nuvola.format("https:{1}",
-            Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
+            "widgetImage") ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage : null;
 
     this._syncTrack(track);
 
@@ -440,7 +439,7 @@ var nuvola = (function(Nuvola) {
     return _getPath(obj[first], keys);
   };
 
-  // Returns a boolean indicating whether there is a property at the path 
+  // Returns a boolean indicating whether there is a property at the path
   // described by the keys given in string or array format
   var _hasPath = function(obj, keys) {
     var value = _getPath.apply(this, arguments);
