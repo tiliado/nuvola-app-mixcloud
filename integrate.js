@@ -2,14 +2,14 @@
  * Copyright 2015 Samuel Mansour <nuvola-app-mixcloud@yay.ovh>
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met: 
- * 
+ * modification, are permitted provided that the following conditions are met:
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer. 
+ *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution. 
- * 
+ *    and/or other materials provided with the distribution.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -24,18 +24,12 @@
 'use strict';
 
 var nuvola = (function(Nuvola) {
-  // verbose mode
-  var _debug = false;
-
   // activate logs
-  var _log = false;
-
+  var _DEBUG = false;
   // log to nuvola app by default
-  var _console = false;
-
+  var _CONSOLE = Nuvola; // or "console"
   // media player component
   var _player = Nuvola.$object(Nuvola.MediaPlayer);
-
   // aliases
   var PlaybackState = Nuvola.PlaybackState;
   var PlayerAction = Nuvola.PlayerAction;
@@ -85,13 +79,8 @@ var nuvola = (function(Nuvola) {
   WebApp._onPageReady = function() {
     // connect handler for signal ActionActivated
     Nuvola.actions.connect("ActionActivated", this);
-
-    // start nuvola logger
-    _logger = _logger.call(Nuvola);
-
     // build up custom nodes to communicate with the JS API
     this._injectCustomNodestoDom();
-
     // start update routine
     this.timeout = setInterval(this._setCallback.bind(this), 250);
   };
@@ -101,13 +90,10 @@ var nuvola = (function(Nuvola) {
     try {
       // API ready
       this._loadApiObjects();
-
       // API loaded
       clearInterval(this.timeout);
-
       // reset playback states
       this._reset();
-
       // add custom listeners
       this._setupWatchers();
     } catch (e) {
@@ -116,23 +102,21 @@ var nuvola = (function(Nuvola) {
     }
   };
 
-  // set defaults 
+  // set defaults
   WebApp._reset = function() {
-    _logger.event("Nuvola reset");
     _player.setCanPlay(false);
     _player.setCanPause(false);
     _player.setCanGoNext(false);
     _player.setCanGoPrev(false);
     _player.setPlaybackState(PlaybackState.UNKNOWN);
     _player.setTrack(Mixcloud.track);
-    _logger.success();
+    _logger.message("Nuvola reset", Mixcloud.track);
   };
 
   // load API scopes
   WebApp._loadApiObjects = function() {
     Mixcloud.scopes.global = $(document.body).scope();
-    Mixcloud.scopes.PlayerQueueCtrl = $(
-            document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
+    Mixcloud.scopes.PlayerQueueCtrl = $(document.querySelector('.ng-scope[ng-controller="PlayerQueueCtrl"]')).scope();
   };
 
   // watch data
@@ -143,7 +127,7 @@ var nuvola = (function(Nuvola) {
         return $scope.playerQueue.queue.cloudcastList.toArray();
       }, function(cloudcastQueue) {
         if (!_isEmpty(cloudcastQueue)) {
-          _logger.event("Playback queue changed!");
+          _logger.message("Playback queue changed!");
           _defer(function() {
             WebApp._refreshNextPrevCloudcast();
           });
@@ -154,15 +138,13 @@ var nuvola = (function(Nuvola) {
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
         return Mixcloud.scopes.PlayerQueueCtrl.player.playing;
       }, function(playing) {
-        _logger.event('playback state updated!');
+        _logger.message('playback state updated!');
         _defer(function() {
-          var state = (playing === true) ? PlaybackState.PLAYING : Mixcloud.stopped
-                  ? PlaybackState.UNKNOWN : PlaybackState.PAUSED;
+          var state = (playing === true) ? PlaybackState.PLAYING : Mixcloud.stopped ? PlaybackState.UNKNOWN : PlaybackState.PAUSED;
           _player.setPlaybackState(state);
           _player.setCanPlay(state === PlaybackState.UNKNOWN || state === PlaybackState.PAUSED);
           _player.setCanPause(state === PlaybackState.PLAYING);
           Mixcloud.state = state;
-          _logger.success();
         });
       });
 
@@ -171,7 +153,6 @@ var nuvola = (function(Nuvola) {
         return Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast;
       }, function(track) {
         if (!_isEmpty(track)) {
-          _logger.event('Track loaded into the player!');
           _defer(function() {
             WebApp._updateCurrentAlbum();
             WebApp._refreshNextPrevCloudcast();
@@ -179,28 +160,16 @@ var nuvola = (function(Nuvola) {
         }
       });
 
-      // watch player info changes
-      Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
-        return _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
-            "currentDisplayTrack", "title"]);
-      }, function(title, previous) {
-        if (title !== previous) {
-          _logger.event('Track title changed in the player!');
-          WebApp._updateCurrentTitle();
-        }
-      });
-
       // watch suggested tracks
       Mixcloud.scopes.PlayerQueueCtrl.$watch(function($scope) {
-        return _getPath(Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue, ["upNext",
-            "nextCloudcast"]);
+        return _getPath(Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue, ["upNext", "nextCloudcast"]);
       }, function(nextCloudcast) {
         if (nextCloudcast !== null) {
-          _logger.event("Suggested track detected!");
+          _logger.message("Suggested track detected!");
           _defer(function() {
             Mixcloud.cloudcast.suggested = nextCloudcast;
             _player.setCanGoNext(true);
-            _logger.success();
+            _logger.message("suggested tracks updated", Mixcloud.cloudcast.suggested);
           });
         }
       });
@@ -213,45 +182,25 @@ var nuvola = (function(Nuvola) {
   WebApp._refreshNextPrevCloudcast = function() {
     var currentIndex = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.getNowPlayingIndex();
 
-    Mixcloud.cloudcast.next = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.cloudcastList
-            .get(currentIndex + 1);
-    Mixcloud.cloudcast.prev = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.cloudcastList
-            .get(currentIndex - 1);
+    Mixcloud.cloudcast.next = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.cloudcastList.get(currentIndex + 1);
+    Mixcloud.cloudcast.prev = Mixcloud.scopes.PlayerQueueCtrl.playerQueue.queue.cloudcastList.get(currentIndex - 1);
 
     _player.setCanGoNext(typeof Mixcloud.cloudcast.next !== "undefined");
     _player.setCanGoPrev(typeof Mixcloud.cloudcast.prev !== "undefined");
 
-    _logger.success();
+    _logger.message("queue updated!", Mixcloud.cloudcast);
   };
 
   // sync album infos
   WebApp._updateCurrentAlbum = function() {
     var track = {};
+
     track.artist = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["owner"]);
     track.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, ["title"]);
 
-    track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast,
-            "widgetImage") ? Nuvola.format("https:{1}",
-            Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage) : null;
+    track.artLocation = _hasPath(Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast, "widgetImage") ? Mixcloud.scopes.PlayerQueueCtrl.player.currentCloudcast.widgetImage : null;
 
     this._syncTrack(track);
-
-    _logger.event("Playback changed!");
-  };
-
-  // sync title infos
-  WebApp._updateCurrentTitle = function() {
-    var track = {};
-    track.artist = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
-        "currentDisplayTrack", "artist"]);
-    track.title = _getPath(Mixcloud.scopes.PlayerQueueCtrl.player, ["nowPlaying",
-        "currentDisplayTrack", "title"]);
-
-    if (_isEmpty(track)) {
-      this._updateCurrentAlbum();
-    } else {
-      this._syncTrack(track);
-    }
   };
 
   WebApp._syncTrack = function(track) {
@@ -259,7 +208,7 @@ var nuvola = (function(Nuvola) {
     _defer(function() {
       _player.setTrack(track);
       Mixcloud.track = track;
-      _logger.success();
+      _logger.message("current track updated", track);
     });
   };
 
@@ -268,10 +217,8 @@ var nuvola = (function(Nuvola) {
     // build
     Mixcloud.nodes.wrapper = Nuvola.makeElement.apply(this, Mixcloud.html.wrapper);
     Mixcloud.nodes.playAll = Nuvola.makeElement.apply(this, Mixcloud.html.playAll);
-
     // attach to wrapper
     Mixcloud.nodes.wrapper.appendChild(Mixcloud.nodes.playAll);
-
     // attach to DOM
     document.body.appendChild(Mixcloud.nodes.wrapper);
   };
@@ -327,10 +274,10 @@ var nuvola = (function(Nuvola) {
         break;
       case PlayerAction.NEXT_SONG:
         if (Mixcloud.cloudcast.next) {
-          _logger.event("play next!");
+          _logger.message("play next!");
           Mixcloud.scopes.PlayerQueueCtrl.playerQueue.playFromQueue(Mixcloud.cloudcast.next);
         } else {
-          _logger.event("play suggested!");
+          _logger.message("play suggested!");
           Mixcloud.scopes.PlayerQueueCtrl.playerQueue.playUpNext();
         }
         break;
@@ -345,65 +292,24 @@ var nuvola = (function(Nuvola) {
     }
   };
 
-  // internal logger that can push to console
-  var _logger = function() {
-    var state = null, logger = null, console = typeof window.console == "object", internal = {};
-
-    // Nuvola log
-    internal.log = this.log.bind(this);
-
-    // logger state mode
-    state = _console && console;
-    logger = state ? window.console : internal;
-
-    return {
-      // route to console if flag is true
-      "logToConsole": function(flag) {
-        if (typeof flag !== "boolean") {
-          throw "this call require a boolean parameter";
-        } else if (flag && flag !== state && window.console) {
-          logger = window.console;
-          state = flag;
-          if (_hasPath(window, ["console", "info"])) {
-            window.console.info("log to console activated!");
-          }
-        } else if (!flag && flag !== state) {
-          logger = internal;
-          state = flag;
-          if (_hasPath(window, ["console", "info"])) {
-            window.console.info("log to internal app activated!");
-          }
-        } else {
-          throw "Debug is already set to : " + state;
-        }
-      },
-      "log": function() {
-        if (_log) {
-          logger.log.apply(state && window.console ? window.console : this, arguments);
-        }
-      },
-      "success": function() {
-        if (_log) {
-          var message = "> ok!";
-          this.log.call(this, message.toUpperCase());
-        }
-      },
-      "event": function(message) {
-        if (_log) {
-          message = "# " + message;
-          this.log.call(this, message.toUpperCase());
-        }
-      },
-      "error": function(obj) {
-        if (_debug && _log) {
-          if (state) {
-            logger.error.call(window.console, obj);
-          } else {
-            this.log.call(this, JSON.stringify(obj));
-          }
-        }
+  // console wrapper
+  var _logger = {
+    "debug": function() {
+      if (_DEBUG) {
+        _CONSOLE.log.apply(this, arguments);
       }
-    };
+    },
+    "message": function(message, data) {
+      if (_DEBUG) {
+        message = "# " + message;
+        _CONSOLE.log(message.toUpperCase(), JSON.stringify(data));
+      }
+    },
+    "error": function(obj) {
+      if (_DEBUG) {
+        _CONSOLE.log(JSON.stringify(obj));
+      }
+    }
   };
 
   // should prevent angular "$digest already in progress" issue
@@ -412,7 +318,7 @@ var nuvola = (function(Nuvola) {
       Mixcloud.scopes.global.$apply(callback);
     } else {
       setTimeout.call(this, _defer.bind(this, callback), 25);
-      _logger.log("_defer will retry!");
+      _logger.message("_defer will retry!");
     }
   };
 
@@ -440,7 +346,7 @@ var nuvola = (function(Nuvola) {
     return _getPath(obj[first], keys);
   };
 
-  // Returns a boolean indicating whether there is a property at the path 
+  // Returns a boolean indicating whether there is a property at the path
   // described by the keys given in string or array format
   var _hasPath = function(obj, keys) {
     var value = _getPath.apply(this, arguments);
@@ -463,11 +369,8 @@ var nuvola = (function(Nuvola) {
 
   return {
     "status": function() {
-      return (_debug || _log) && console && console.log(Mixcloud);
-    },
-    "debug": function(flag) {
-      _logger.logToConsole.call(this, flag);
+      return console && console.log(Mixcloud);
     }
   };
 
-})(this); // function(Nuvola)
+})(this);
