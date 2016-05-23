@@ -8,6 +8,7 @@
     "api_major": 3,
     "api_minor": 0,
     "categories": "AudioVideo;Audio;",
+    "license": "2-Clause BSD-license",
     "home_url": "https://www.mixcloud.com",
     "allowed_uri": "https://www.mixcloud.com"
 }
