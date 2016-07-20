@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Samuel Mansour <nuvola-app-mixcloud@yay.ovh>
+ * Copyright 2015 Samuel Mansour <s83@users.noreply.github.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:

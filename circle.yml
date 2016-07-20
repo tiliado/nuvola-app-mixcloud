@@ -9,10 +9,10 @@ machine:
 test:
   override:
     - docker run --workdir="/tmp/casperjs" -v $(pwd):/tmp/casperjs oopschen/casperjs:1.1.0-beta3 test  tests/casper.js
-    
+
 checkout:
   post:
-    - git config user.name "CircleCi" && git config user.email "circleci@yay.ovh" 
+    - git config user.name "CircleCi" && git config user.email "s83@users.noreply.github.com" 
     - git checkout -fq tests
     - git reset --hard origin/tests
     - git pull origin tests

@@ -3,7 +3,7 @@ Mixcloud for Nuvola Player 3 [![Circle CI](https://circleci.com/gh/tiliado/nuvol
 
 Integration of Mixcloud into your linux desktop via
 [Nuvola Player](https://github.com/tiliado/nuvolaplayer).
- 
+
 Support
 -------
 
@@ -28,10 +28,10 @@ Copyright
 ---------
 
   - src/icon*.svg:
-      - Copyright 2015-2016 Samuel Mansour <nuvola-app-mixcloud@yay.ovh>
+      - Copyright 2015-2016 Samuel Mansour <s83@users.noreply.github.com>
       - Copyright 2016 Alexander King
   - Other files:
-      - Copyright 2015-2016 Samuel Mansour <nuvola-app-mixcloud@yay.ovh>
+      - Copyright 2015-2016 Samuel Mansour <s83@users.noreply.github.com>
       - Copyright 2014-2016 Jiří Janoušek <janousek.jiri@gmail.com>
       - Copyright 2016 Patrick Burroughs (Celti) <celti@celti.name>
   - License: [2-Clause BSD-license](./LICENSE)

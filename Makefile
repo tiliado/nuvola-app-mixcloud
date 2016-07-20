@@ -1,16 +1,16 @@
-# Copyright 2015 Samuel Mansour <nuvola-app-mixcloud@yay.ovh>
+# Copyright 2015 Samuel Mansour <s83@users.noreply.github.com>
 # Copyright 2014-2016 Jiří Janoušek <janousek.jiri@gmail.com>
 # Copyright 2016 Patrick Burroughs (Celti) <celti@celti.name>
 #
 # Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met: 
-# 
+# modification, are permitted provided that the following conditions are met:
+#
 # 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer. 
+#    list of conditions and the following disclaimer.
 # 2. Redistributions in binary form must reproduce the above copyright notice,
 #    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution. 
-# 
+#    and/or other materials provided with the distribution.
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -61,15 +61,15 @@ $(ICONS_DIR)/%.svg: src/%.svg | $(ICONS_DIR)
 $(ICONS_DIR)/16.png: $(SOURCE_ICON_XS) | $(ICONS_DIR)
 	./svg-convert.sh $< 16 $@
 
-# Generate icon 22	
+# Generate icon 22
 $(ICONS_DIR)/22.png : $(SOURCE_ICON_XS) | $(ICONS_DIR)
 	./svg-convert.sh $< 22 $@
 
-# Generate icon 24	
+# Generate icon 24
 $(ICONS_DIR)/24.png : $(SOURCE_ICON_XS) | $(ICONS_DIR)
 	./svg-convert.sh $< 24 $@
 
-# Generate icon 32	
+# Generate icon 32
 $(ICONS_DIR)/32.png : $(SOURCE_ICON_SM) | $(ICONS_DIR)
 	./svg-convert.sh $< 32 $@
 
@@ -95,7 +95,7 @@ install: $(LICENSES) $(INSTALL_FILES) $(PNG_ICONS) $(SCALABLE_ICON)
 	install -vCd $(DEST)/$(APP_ID)/$(ICONS_DIR)
 	install -vC -t $(DEST)/$(APP_ID) $(LICENSES) $(INSTALL_FILES)
 	install -vC -t $(DEST)/$(APP_ID)/$(ICONS_DIR) $(PNG_ICONS) $(SCALABLE_ICON)
-	
+
 	# Create symlinks to icons
 	mkdir -pv $(DEST)/../../icons/hicolor/scalable/apps || true
 	ln -s -f -v -T ../../../../nuvolaplayer3/web_apps/$(APP_ID)/$(SCALABLE_ICON) \
@@ -105,7 +105,7 @@ install: $(LICENSES) $(INSTALL_FILES) $(PNG_ICONS) $(SCALABLE_ICON)
 		ln -s -f -v -T ../../../../nuvolaplayer3/web_apps/$(APP_ID)/$(ICONS_DIR)/$$size.png \
 		$(DEST)/../../icons/hicolor/$${size}x$${size}/apps/nuvolaplayer3_$(APP_ID).png; \
 	done
-	
+
 
 # Uninstall files
 uninstall:
