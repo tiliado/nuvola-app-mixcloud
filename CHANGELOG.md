@@ -1,8 +1,8 @@
 Changelog
 =========
 
-3.1 - unreleased
-----------------
+3.1 - August 21st, 2016
+-----------------------
 
   * Icon background was changed to be consistent with other Nuvola apps.
   * SVG icons are optimized with scour to reduce their size.
