@@ -1,0 +1,21 @@
+{
+    "id": "mixcloud", 
+    "name": "Mixcloud", 
+    "maintainer_name": "Samuel Mansour", 
+    "maintainer_link": "https://github.com/s83", 
+    "version_major": 3, 
+    "version_minor": 1, 
+    "api_major": 3, 
+    "api_minor": 0, 
+    "categories": "AudioVideo;Audio;", 
+    "license": "2-Clause BSD-license", 
+    "home_url": "https://www.mixcloud.com", 
+    "allowed_uri": "https://www.mixcloud.com", 
+    "build": {
+        "icons": [
+            "src/icon.svg SCALABLE 64 128 256", 
+            "src/icon-xs.svg 16 22 24", 
+            "src/icon-sm.svg 32 48"
+        ]
+    }
+}

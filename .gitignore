@@ -2,3 +2,10 @@ icons
 .project
 .settings
 .vagrant
+Makefile
+eu.tiliado.NuvolaAppMixcloud.appdata.xml
+eu.tiliado.NuvolaAppMixcloud.data.service
+eu.tiliado.NuvolaAppMixcloud.desktop
+metadata.json
+mixcloud.tar.gz
+nuvola-app-mixcloud
