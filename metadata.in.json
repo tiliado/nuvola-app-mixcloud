@@ -5,12 +5,13 @@
     "maintainer_link": "https://github.com/fenryxo", 
     "version_major": 3, 
     "version_minor": 2, 
-    "api_major": 3, 
-    "api_minor": 0, 
+    "api_major": 4, 
+    "api_minor": 10,
+    "requirements" : "Codec[MP3]",
     "categories": "AudioVideo;Audio;", 
     "license": "2-Clause BSD-license", 
     "home_url": "https://www.mixcloud.com", 
-    "allowed_uri": "https://www.mixcloud.com", 
+    "FIXME! allowed_uri": "https://www.mixcloud.com", 
     "build": {
         "icons": [
             "src/icon.svg SCALABLE 64 128 256", 
