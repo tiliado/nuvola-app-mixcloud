@@ -1,6 +1,9 @@
 Mixcloud Change Log
 ===================
 
+4.1 - March 4th, 2018
+---------------------
+
  * Require Chromium backend. Otherwise, Mixcloud shows "your browser is not supported".
    Issue: tiliado/nuvola-app-mixcloud#12
 
