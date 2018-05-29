@@ -9,3 +9,9 @@ eu.tiliado.NuvolaAppMixcloud.desktop
 metadata.json
 mixcloud.tar.gz
 nuvola-app-mixcloud
+/screenshots/
+eu.tiliado.NuvolaAppMixcloud.service
+eu.tiliado.WebRuntimeAppMixcloud.appdata.xml
+eu.tiliado.WebRuntimeAppMixcloud.desktop
+eu.tiliado.WebRuntimeAppMixcloud.service
+nuvola-app-mixcloud.metainfo.xml
