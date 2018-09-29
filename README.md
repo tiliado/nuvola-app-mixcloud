@@ -1,4 +1,4 @@
-Mixcloud • Nuvola Apps Runtime
+Mixcloud • Nuvola Apps Runtime [![CircleCI](https://circleci.com/gh/tiliado/nuvola-app-mixcloud/tree/master.svg?style=svg)](https://circleci.com/gh/tiliado/nuvola-app-mixcloud/tree/master)
 ==============================
 
 Integration of Mixcloud into your linux desktop via
