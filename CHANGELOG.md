@@ -1,6 +1,9 @@
 Mixcloud Change Log
 ===================
 
+  * Nuvola 4.13 is required.
+  * A dark theme variant is used by default.
+
 4.1 - March 4th, 2018
 ---------------------
 
