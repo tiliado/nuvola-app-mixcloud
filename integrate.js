@@ -25,23 +25,23 @@
 'use strict';
 
 (function (Nuvola) {
-  var ACTION_LOVE_TRACK = 'love-track'
+  const ACTION_LOVE_TRACK = 'love-track'
 
-  var C_ = Nuvola.Translate.pgettext
-  var player = Nuvola.$object(Nuvola.MediaPlayer)
-  var PlaybackState = Nuvola.PlaybackState
-  var PlayerAction = Nuvola.PlayerAction
-  var WebApp = Nuvola.$WebApp()
+  const C_ = Nuvola.Translate.pgettext
+  const player = Nuvola.$object(Nuvola.MediaPlayer)
+  const PlaybackState = Nuvola.PlaybackState
+  const PlayerAction = Nuvola.PlayerAction
+  const WebApp = Nuvola.$WebApp()
 
   WebApp._onInitAppRunner = function (emitter) {
     Nuvola.WebApp._onInitAppRunner.call(this, emitter)
     Nuvola.actions.addAction('playback', 'win', ACTION_LOVE_TRACK, C_('Action', 'Favorite track'),
-          null, null, null, false)
+      null, null, null, false)
   }
 
   WebApp._onInitWebWorker = function (emitter) {
     Nuvola.WebApp._onInitWebWorker.call(this, emitter)
-    var state = document.readyState
+    const state = document.readyState
     if (state === 'interactive' || state === 'complete') {
       this._onPageReady()
     } else {
@@ -57,7 +57,7 @@
 
   WebApp.update = function () {
     try {
-      var track = {
+      const track = {
         title: null,
         artist: null,
         album: null,
@@ -65,7 +65,7 @@
         rating: null,
         length: null
       }
-      var elm = null
+      let elm = null
       elm = document.querySelector('.player .player-cloudcast-title')
       if (elm) {
         track.title = elm.textContent || null
@@ -78,19 +78,19 @@
       if (elm) {
         track.artLocation = elm.src.replace('/52x52/', '/480x480/') || null
       }
-      var trackTime = this.trackTime()
+      const trackTime = this.trackTime()
       track.length = trackTime.total
       player.setTrack(track)
       player.setTrackPosition(trackTime.now)
 
-      var state = PlaybackState.UNKNOWN
-      var buttons = this.buttons()
+      let state = PlaybackState.UNKNOWN
+      const buttons = this.buttons()
       if (buttons.play) {
         state = PlaybackState.PAUSED
       } else if (buttons.pause) {
         state = PlaybackState.PLAYING
       }
-      var volume = this.volume()
+      const volume = this.volume()
       player.updateVolume(volume)
       player.setPlaybackState(state)
       player.setCanSeek(state !== PlaybackState.UNKNOWN)
@@ -98,7 +98,7 @@
       player.setCanPlay(state !== PlaybackState.UNKNOWN && !!buttons.play)
       player.setCanPause(state !== PlaybackState.UNKNOWN && !!buttons.pause)
 
-      var loveButton = this.loveButton()
+      const loveButton = this.loveButton()
       Nuvola.actions.updateEnabledFlag(ACTION_LOVE_TRACK, state !== PlaybackState.UNKNOWN && !!loveButton.button)
       Nuvola.actions.updateState(ACTION_LOVE_TRACK, loveButton.state)
     } finally {
@@ -107,7 +107,7 @@
   }
 
   WebApp._onActionActivated = function (emitter, name, parameter) {
-    var buttons = this.buttons()
+    const buttons = this.buttons()
     switch (name) {
       case PlayerAction.TOGGLE_PLAY:
         Nuvola.clickOnElement(buttons.play || buttons.pause)
@@ -121,39 +121,42 @@
       case PlayerAction.STOP:
         Nuvola.clickOnElement(buttons.pause)
         break
-      case PlayerAction.SEEK:
-        var trackTime = this.trackTime()
-        var total = trackTime.total
+      case PlayerAction.SEEK: {
+        const trackTime = this.trackTime()
+        const total = trackTime.total
         if (parameter >= 0 && parameter <= total) {
           Nuvola.clickOnElement(
             document.querySelector('.player .player-playbar .player-scrubber-buffered'), parameter / total, 0.5)
         }
         break
-      case PlayerAction.CHANGE_VOLUME:
-        var elm = document.querySelector('.player .player-volume-container')
-        var bar = document.querySelector('.player .player-volume-toggle .player-volume-track')
+      }
+      case PlayerAction.CHANGE_VOLUME: {
+        const elm = document.querySelector('.player .player-volume-container')
+        const bar = document.querySelector('.player .player-volume-toggle .player-volume-track')
         if (elm && bar) {
-          var height = elm.style.height
+          const height = elm.style.height
           elm.style.height = '155px'
           Nuvola.clickOnElement(bar, 0.5, 1 - parameter)
           elm.style.height = height
         }
         break
-      case ACTION_LOVE_TRACK:
-        var loveButton = this.loveButton().button
+      }
+      case ACTION_LOVE_TRACK: {
+        const loveButton = this.loveButton().button
         if (loveButton) {
           Nuvola.clickOnElement(loveButton)
         }
         break
+      }
       default:
         throw Error('Action "' + name + '" not supported.')
     }
   }
 
   WebApp.trackTime = function () {
-    var now = document.querySelector('.player .player-time')
-    var end = document.querySelector('.player .player-time.end-time')
-    var time = {now: null, total: null}
+    const now = document.querySelector('.player .player-time')
+    const end = document.querySelector('.player .player-time.end-time')
+    const time = { now: null, total: null }
     if (now && end) {
       time.now = Nuvola.parseTimeUsec(now.textContent)
       time.total = time.now - Nuvola.parseTimeUsec(end.textContent)
@@ -162,13 +165,13 @@
   }
 
   WebApp.volume = function () {
-    var elm = document.querySelector('.player .player-volume-toggle .player-volume-percent')
+    const elm = document.querySelector('.player .player-volume-toggle .player-volume-percent')
     return elm && elm.style.height.endsWith('%') ? elm.style.height.slice(0, -1) / 100 : null
   }
 
   WebApp.buttons = function () {
-    var elm = document.querySelector('.player .player-control')
-    var buttons = {
+    const elm = document.querySelector('.player .player-control')
+    const buttons = {
       play: null,
       pause: null
     }
@@ -179,9 +182,9 @@
   }
 
   WebApp.loveButton = function () {
-    var button = document.querySelector('.player .player-icons.favorite')
-    var state = button && button.classList.contains('favorite-state')
-    return {button: button, state: state}
+    const button = document.querySelector('.player .player-icons.favorite')
+    const state = button && button.classList.contains('favorite-state')
+    return { button: button, state: state }
   }
 
   WebApp.start()
